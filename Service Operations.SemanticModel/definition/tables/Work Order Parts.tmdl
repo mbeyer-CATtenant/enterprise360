@@ -1,0 +1,78 @@
+/// Replacement parts consumed by service work orders.
+table 'Work Order Parts'
+
+	/// Extended standard cost of parts consumed by service work.
+	measure 'Parts Cost' = SUM('Work Order Parts'[Part Cost Value])
+		formatString: $#,##0.00
+		displayFolder: Measures\Value
+
+	/// Number of replacement-part units consumed.
+	measure 'Parts Used' = SUM('Work Order Parts'[Quantity Used])
+		formatString: #,##0
+		displayFolder: Measures\Quantity
+
+	/// Number of work-order part lines.
+	measure '# Work Order Part Lines' = COUNTROWS('Work Order Parts')
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Stable work-order-part identifier.
+	column 'Work Order Part ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: work_order_part_id
+
+	/// Integer work-order relationship key.
+	column 'Work Order Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: work_order_key
+
+	/// Work-order relationship key.
+	column 'Work Order ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: work_order_id
+
+	/// Integer replacement-product relationship key.
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: product_key
+
+	/// Replacement-product relationship key.
+	column 'Product ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: product_id
+
+	/// Number of part units consumed.
+	column 'Quantity Used'
+		dataType: int64
+		isHidden
+		summarizeBy: none
+		sourceColumn: quantity_used
+
+	/// Extended standard part cost used by explicit measures.
+	column 'Part Cost Value'
+		dataType: decimal
+		isHidden
+		summarizeBy: none
+		sourceColumn: part_cost
+
+	partition 'Work Order Parts' = entity
+		mode: directLake
+		source
+			entityName: fact_work_order_part
+			schemaName: gold
+			expressionSource: DirectLakeSource

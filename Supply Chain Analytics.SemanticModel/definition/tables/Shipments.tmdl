@@ -1,0 +1,128 @@
+/// Outbound shipment events supporting order fulfillment analysis.
+table Shipments
+
+	/// Number of shipment records.
+	measure '# Shipments' = COUNTROWS(Shipments)
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Number of shipments marked delivered.
+	measure '# Delivered Shipments' = CALCULATE(COUNTROWS(Shipments), KEEPFILTERS(Shipments[Shipment Status] = "Delivered"))
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Percentage of delivered shipments arriving by the promised date.
+	measure 'On-Time Delivery Rate' = ```
+			VAR _deliveredShipments = [# Delivered Shipments]
+			VAR _onTimeShipments =
+				CALCULATE(
+					COUNTROWS(Shipments),
+					KEEPFILTERS(Shipments[Shipment Status] = "Delivered"),
+					KEEPFILTERS(Shipments[Actual Delivery Date] <= Shipments[Promised Delivery Date])
+				)
+			RETURN
+				DIVIDE(_onTimeShipments, _deliveredShipments)
+			```
+		formatString: 0.00%
+		displayFolder: Measures\Rates
+
+	/// Total outbound freight expense.
+	measure 'Freight Cost' = SUM(Shipments[Freight Cost Value])
+		formatString: $#,##0.00
+		displayFolder: Measures\Value
+
+	/// Percentage of shipments currently or previously marked for quality hold.
+	measure 'Quality Hold Rate' = ```
+			VAR _qualityHolds =
+				CALCULATE(
+					COUNTROWS(Shipments),
+					KEEPFILTERS(Shipments[Quality Hold] = TRUE())
+				)
+			RETURN
+				DIVIDE(_qualityHolds, [# Shipments])
+			```
+		formatString: 0.00%
+		displayFolder: Measures\Rates
+
+	/// Stable shipment identifier.
+	column 'Shipment ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: shipment_id
+
+	/// Sales-order identifier associated with the shipment.
+	column 'Sales Order ID'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: sales_order_id
+
+	/// Integer facility relationship key.
+	column 'Facility Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: facility_key
+
+	/// Facility relationship key.
+	column 'Facility ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: facility_id
+
+	/// Logistics provider responsible for the shipment.
+	column Carrier
+		dataType: string
+		summarizeBy: none
+		sourceColumn: carrier_name
+
+	/// Date on which the shipment departed.
+	column 'Ship Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: ship_date
+
+	/// Customer promise date for delivery.
+	column 'Promised Delivery Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: promised_delivery_date
+
+	/// Actual delivery date when available.
+	column 'Actual Delivery Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: actual_delivery_date
+
+	/// Freight expense recorded for the shipment.
+	column 'Freight Cost Value'
+		dataType: decimal
+		isHidden
+		summarizeBy: none
+		sourceColumn: freight_cost
+
+	/// Identifies shipments blocked for quality review.
+	column 'Quality Hold'
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: quality_hold
+
+	/// Current logistics status.
+	column 'Shipment Status'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: shipment_status
+
+	partition Shipments = entity
+		mode: directLake
+		source
+			entityName: fact_shipment
+			schemaName: gold
+			expressionSource: DirectLakeSource

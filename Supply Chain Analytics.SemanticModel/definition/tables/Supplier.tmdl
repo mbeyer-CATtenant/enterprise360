@@ -1,0 +1,81 @@
+/// Organizations providing products and replacement parts to the enterprise.
+table Supplier
+
+	/// Number of suppliers currently available for procurement.
+	measure '# Active Suppliers' = CALCULATE(COUNTROWS(Supplier), KEEPFILTERS(Supplier[Status] = "Active"))
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Integer relationship key optimized for Direct Lake joins.
+	column 'Supplier Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: supplier_key
+
+	/// Stable supplier identifier used by procurement relationships.
+	column 'Supplier ID'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: supplier_id
+
+	/// Business-facing supplier name.
+	column 'Supplier Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: supplier_name
+
+	/// Enterprise operating region assigned to the supplier.
+	column Region
+		dataType: string
+		summarizeBy: none
+		sourceColumn: region_code
+
+	/// Two-letter supplier country code.
+	column Country
+		dataType: string
+		dataCategory: Country
+		summarizeBy: none
+		sourceColumn: country_code
+
+	/// Procurement classification indicating approval preference.
+	column 'Supplier Tier'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: supplier_tier
+
+	/// Date on which the current synthetic supplier agreement began.
+	column 'Contract Start Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: contract_start_date
+
+	/// Current procurement lifecycle status.
+	column Status
+		dataType: string
+		summarizeBy: none
+		sourceColumn: status
+
+	/// Date on which the supplier record was created.
+	column 'Created On'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: created_on
+
+	/// Date on which the supplier record was last modified.
+	column 'Modified On'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: modified_on
+
+	partition Supplier = entity
+		mode: directLake
+		source
+			entityName: dim_supplier
+			schemaName: gold
+			expressionSource: DirectLakeSource

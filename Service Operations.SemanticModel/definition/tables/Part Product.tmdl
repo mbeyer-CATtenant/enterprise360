@@ -1,0 +1,67 @@
+/// Product role used specifically for replacement parts consumed by work orders.
+table 'Part Product'
+
+	/// Integer relationship key optimized for Direct Lake joins.
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: product_key
+
+	/// Stable product identifier used by part-consumption relationships.
+	column 'Product ID'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: product_id
+
+	/// Stock keeping unit used in service-parts processes.
+	column SKU
+		dataType: string
+		summarizeBy: none
+		sourceColumn: sku
+
+	/// Business-facing replacement-product name.
+	column 'Product Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: product_name
+
+	/// High-level product classification.
+	column 'Product Category'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: product_category
+
+	/// Product family used for service-parts analysis.
+	column 'Product Family'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: product_family
+
+	/// Standard product cost.
+	column 'Standard Cost'
+		dataType: decimal
+		formatString: $#,##0.00
+		summarizeBy: none
+		sourceColumn: standard_cost
+
+	/// Identifies parts that are operationally critical.
+	column 'Critical Spare'
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: critical_spare
+
+	/// Current product lifecycle status.
+	column Status
+		dataType: string
+		summarizeBy: none
+		sourceColumn: status
+
+	partition 'Part Product' = entity
+		mode: directLake
+		source
+			entityName: dim_product
+			schemaName: gold
+			expressionSource: DirectLakeSource

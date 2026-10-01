@@ -1,0 +1,164 @@
+/// Procurement detail at one row per purchase-order line.
+table 'Purchase Orders'
+
+	/// Extended procurement value based on ordered quantity and unit cost.
+	measure 'Purchased Value' = SUMX('Purchase Orders', 'Purchase Orders'[Ordered Quantity] * 'Purchase Orders'[Unit Cost])
+		formatString: $#,##0.00
+		displayFolder: Measures\Value
+
+	/// Number of distinct purchase orders.
+	measure '# Purchase Orders' = DISTINCTCOUNT('Purchase Orders'[Purchase Order ID])
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Total quantity ordered from suppliers.
+	measure 'Total Ordered Quantity' = SUM('Purchase Orders'[Ordered Quantity])
+		formatString: #,##0
+		displayFolder: Measures\Quantity
+
+	/// Total quantity received from suppliers.
+	measure 'Total Received Quantity' = SUM('Purchase Orders'[Received Quantity])
+		formatString: #,##0
+		displayFolder: Measures\Quantity
+
+	/// Received quantity divided by ordered quantity.
+	measure 'Supplier Fill Rate' = DIVIDE([Total Received Quantity], [Total Ordered Quantity])
+		formatString: 0.00%
+		displayFolder: Measures\Rates
+
+	/// Percentage of received lines arriving on or before the expected date.
+	measure 'On-Time Receipt Rate' = ```
+			VAR _receivedLines =
+				CALCULATE(
+					COUNTROWS('Purchase Orders'),
+					KEEPFILTERS('Purchase Orders'[Purchase Order Status] <> "Open")
+				)
+			VAR _onTimeLines =
+				CALCULATE(
+					COUNTROWS('Purchase Orders'),
+					KEEPFILTERS('Purchase Orders'[Purchase Order Status] <> "Open"),
+					KEEPFILTERS('Purchase Orders'[Received Date] <= 'Purchase Orders'[Expected Date])
+				)
+			RETURN
+				DIVIDE(_onTimeLines, _receivedLines)
+			```
+		formatString: 0.00%
+		displayFolder: Measures\Rates
+
+	/// Stable purchase-order-line identifier.
+	column 'Purchase Order Line ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: purchase_order_line_id
+
+	/// Purchase-order header identifier used for distinct-order counts.
+	column 'Purchase Order ID'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: purchase_order_id
+
+	/// Integer supplier relationship key.
+	column 'Supplier Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: supplier_key
+
+	/// Supplier relationship key.
+	column 'Supplier ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: supplier_id
+
+	/// Integer product relationship key.
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: product_key
+
+	/// Product relationship key.
+	column 'Product ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: product_id
+
+	/// Integer facility relationship key.
+	column 'Facility Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: facility_key
+
+	/// Facility relationship key.
+	column 'Facility ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: facility_id
+
+	/// Date on which the purchase order was placed.
+	column 'Order Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: order_date
+
+	/// Date on which the supplier was expected to deliver.
+	column 'Expected Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: expected_date
+
+	/// Date on which the line was actually received.
+	column 'Received Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: received_date
+
+	/// Quantity requested from the supplier.
+	column 'Ordered Quantity'
+		dataType: int64
+		isHidden
+		summarizeBy: none
+		sourceColumn: ordered_quantity
+
+	/// Quantity received from the supplier.
+	column 'Received Quantity'
+		dataType: int64
+		isHidden
+		summarizeBy: none
+		sourceColumn: received_quantity
+
+	/// Contracted unit cost for the purchase-order line.
+	column 'Unit Cost'
+		dataType: decimal
+		isHidden
+		summarizeBy: none
+		sourceColumn: unit_cost
+
+	/// Current receiving status of the line.
+	column 'Purchase Order Status'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: purchase_order_status
+
+	partition 'Purchase Orders' = entity
+		mode: directLake
+		source
+			entityName: fact_purchase_order_line
+			schemaName: gold
+			expressionSource: DirectLakeSource

@@ -1,0 +1,76 @@
+/// Employees who support enterprise commercial and operational processes.
+table Employee
+
+	/// Number of employees currently marked active.
+	measure '# Active Employees' = CALCULATE(COUNTROWS(Employee), KEEPFILTERS(Employee[Status] = "Active"))
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Integer relationship key optimized for Direct Lake joins.
+	column 'Employee Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: employee_key
+
+	/// Stable employee identifier used to connect technician records.
+	column 'Employee ID'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: employee_id
+
+	/// Employee display name.
+	column 'Employee Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: employee_name
+
+	/// Organizational department to which the employee belongs.
+	column Department
+		dataType: string
+		summarizeBy: none
+		sourceColumn: department
+
+	/// Relative organizational seniority.
+	column 'Job Level'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: job_level
+
+	/// Integer facility key retained for employee assignment analysis.
+	column 'Facility Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: facility_key
+
+	/// Facility assignment retained for employee-level analysis.
+	column 'Facility ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: facility_id
+
+	/// Date on which the employee joined the organization.
+	column 'Hire Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: hire_date
+
+	/// Current employment status.
+	column Status
+		dataType: string
+		summarizeBy: none
+		sourceColumn: status
+
+	partition Employee = entity
+		mode: directLake
+		source
+			entityName: dim_employee
+			schemaName: gold
+			expressionSource: DirectLakeSource

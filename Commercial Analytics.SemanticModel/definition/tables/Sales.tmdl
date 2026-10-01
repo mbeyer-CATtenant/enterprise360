@@ -1,0 +1,133 @@
+/// Commercial sales detail at one row per sales-order line.
+table Sales
+
+	/// Revenue after line-level discounts.
+	measure 'Total Revenue' = SUM(Sales[Line Revenue])
+		formatString: $#,##0.00
+		displayFolder: Measures\Value
+
+	/// Standard cost extended by sales quantity.
+	measure 'Total Cost' = SUM(Sales[Line Cost])
+		formatString: $#,##0.00
+		displayFolder: Measures\Value
+
+	/// Revenue remaining after standard product cost.
+	measure 'Gross Margin' = [Total Revenue] - [Total Cost]
+		formatString: $#,##0.00
+		displayFolder: Measures\Value
+
+	/// Gross margin as a percentage of revenue.
+	measure 'Gross Margin (%)' = DIVIDE([Gross Margin], [Total Revenue])
+		formatString: 0.00%
+		displayFolder: Measures\Rates
+
+	/// Total product units sold.
+	measure 'Units Sold' = SUM(Sales[Quantity])
+		formatString: #,##0
+		displayFolder: Measures\Quantity
+
+	/// Number of order-line records.
+	measure '# Sales Lines' = COUNTROWS(Sales)
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Number of distinct orders represented in sales detail.
+	measure '# Orders with Sales' = DISTINCTCOUNT(Sales[Sales Order ID])
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Realized revenue per unit sold.
+	measure 'Average Selling Price' = DIVIDE([Total Revenue], [Units Sold])
+		formatString: $#,##0.00
+		displayFolder: Measures\Value
+
+	/// Revenue accumulated from the beginning of the calendar year.
+	measure 'Total Revenue (ytd)' = TOTALYTD([Total Revenue], Date[Date])
+		formatString: $#,##0.00
+		displayFolder: Measures\Time Intelligence
+
+	/// Revenue for the comparable prior-year period.
+	measure 'Total Revenue (ly)' = CALCULATE([Total Revenue], SAMEPERIODLASTYEAR(Date[Date]))
+		formatString: $#,##0.00
+		displayFolder: Measures\Time Intelligence
+
+	/// Stable order-line identifier.
+	column 'Sales Order Line ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: sales_order_line_id
+
+	/// Integer sales-order relationship key.
+	column 'Sales Order Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: sales_order_key
+
+	/// Sales-order header relationship key.
+	column 'Sales Order ID'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: sales_order_id
+
+	/// Integer product relationship key.
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: product_key
+
+	/// Product relationship key.
+	column 'Product ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: product_id
+
+	/// Number of product units on the line.
+	column Quantity
+		dataType: int64
+		isHidden
+		summarizeBy: none
+		sourceColumn: quantity
+
+	/// Published unit price before the line discount.
+	column 'Unit Price'
+		dataType: decimal
+		formatString: $#,##0.00
+		summarizeBy: none
+		sourceColumn: unit_price
+
+	/// Discount percentage applied to the line.
+	column 'Discount Percent'
+		dataType: decimal
+		formatString: 0.00%
+		summarizeBy: none
+		sourceColumn: discount_percent
+
+	/// Extended revenue after discount.
+	column 'Line Revenue'
+		dataType: decimal
+		isHidden
+		summarizeBy: none
+		sourceColumn: line_revenue
+
+	/// Extended standard product cost.
+	column 'Line Cost'
+		dataType: decimal
+		isHidden
+		summarizeBy: none
+		sourceColumn: line_cost
+
+	partition Sales = entity
+		mode: directLake
+		source
+			entityName: fact_sales_order_line
+			schemaName: gold
+			expressionSource: DirectLakeSource

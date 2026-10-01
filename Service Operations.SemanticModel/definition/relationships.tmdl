@@ -1,0 +1,54 @@
+relationship 'Technician to Employee'
+	fromColumn: Technician.'Employee Key'
+	toColumn: Employee.'Employee Key'
+	crossFilteringBehavior: oneDirection
+
+relationship 'Asset to Customer'
+	fromColumn: Asset.'Customer Key'
+	toColumn: Customer.'Customer Key'
+	crossFilteringBehavior: oneDirection
+
+relationship 'Asset to Product'
+	fromColumn: Asset.'Product Key'
+	toColumn: Product.'Product Key'
+	crossFilteringBehavior: oneDirection
+
+relationship 'Asset to Facility'
+	fromColumn: Asset.'Facility Key'
+	toColumn: Facility.'Facility Key'
+	crossFilteringBehavior: oneDirection
+
+relationship 'Work Orders to Date'
+	fromColumn: 'Work Orders'.'Opened Date'
+	toColumn: Date.Date
+	crossFilteringBehavior: oneDirection
+
+relationship 'Work Orders to Asset'
+	fromColumn: 'Work Orders'.'Asset Key'
+	toColumn: Asset.'Asset Key'
+	crossFilteringBehavior: oneDirection
+
+relationship 'Work Orders to Technician'
+	fromColumn: 'Work Orders'.'Technician Key'
+	toColumn: Technician.'Technician Key'
+	crossFilteringBehavior: oneDirection
+
+relationship 'Work Order Parts to Work Orders'
+	fromColumn: 'Work Order Parts'.'Work Order Key'
+	toColumn: 'Work Orders'.'Work Order Key'
+	crossFilteringBehavior: oneDirection
+
+relationship 'Work Order Parts to Part Product'
+	fromColumn: 'Work Order Parts'.'Product Key'
+	toColumn: 'Part Product'.'Product Key'
+	crossFilteringBehavior: oneDirection
+
+relationship 'Asset Daily Status to Date'
+	fromColumn: 'Asset Daily Status'.'Status Date'
+	toColumn: Date.Date
+	crossFilteringBehavior: oneDirection
+
+relationship 'Asset Daily Status to Asset'
+	fromColumn: 'Asset Daily Status'.'Asset Key'
+	toColumn: Asset.'Asset Key'
+	crossFilteringBehavior: oneDirection

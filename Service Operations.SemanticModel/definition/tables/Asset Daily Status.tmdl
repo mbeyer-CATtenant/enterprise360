@@ -1,0 +1,105 @@
+/// Daily operating condition and availability observations for installed assets.
+table 'Asset Daily Status'
+
+	/// Total asset operating hours.
+	measure 'Operating Hours' = SUM('Asset Daily Status'[Operating Hours Value])
+		formatString: #,##0.0
+		displayFolder: Measures\Duration
+
+	/// Total asset downtime hours.
+	measure 'Downtime Hours' = SUM('Asset Daily Status'[Downtime Hours Value])
+		formatString: #,##0.0
+		displayFolder: Measures\Duration
+
+	/// Operating hours as a percentage of total observed hours.
+	measure 'Asset Availability' = DIVIDE([Operating Hours], [Operating Hours] + [Downtime Hours])
+		formatString: 0.00%
+		displayFolder: Measures\Rates
+
+	/// Average daily health score across observed assets.
+	measure 'Average Health Score' = AVERAGE('Asset Daily Status'[Health Score])
+		formatString: #,##0.0
+		displayFolder: Measures\Condition
+
+	/// Average measured asset temperature in degrees Celsius.
+	measure 'Average Temperature Celsius' = AVERAGE('Asset Daily Status'[Temperature Celsius])
+		formatString: #,##0.0
+		displayFolder: Measures\Condition
+
+	/// Total operational alerts recorded in daily observations.
+	measure '# Alerts' = SUM('Asset Daily Status'[Alert Count])
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Stable daily-status observation identifier.
+	column 'Asset Daily Status ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: asset_daily_status_id
+
+	/// Integer asset relationship key.
+	column 'Asset Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: asset_key
+
+	/// Asset relationship key.
+	column 'Asset ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: asset_id
+
+	/// Date on which the asset condition was observed.
+	column 'Status Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: status_date
+
+	/// Daily operating hours used by explicit measures.
+	column 'Operating Hours Value'
+		dataType: decimal
+		isHidden
+		summarizeBy: none
+		sourceColumn: operating_hours
+
+	/// Daily downtime hours used by explicit measures.
+	column 'Downtime Hours Value'
+		dataType: decimal
+		isHidden
+		summarizeBy: none
+		sourceColumn: downtime_hours
+
+	/// Synthetic condition score from 0 to 100.
+	column 'Health Score'
+		dataType: decimal
+		isHidden
+		summarizeBy: none
+		sourceColumn: health_score
+
+	/// Synthetic observed operating temperature.
+	column 'Temperature Celsius'
+		dataType: decimal
+		isHidden
+		summarizeBy: none
+		sourceColumn: temperature_c
+
+	/// Number of alerts recorded for the asset and date.
+	column 'Alert Count'
+		dataType: int64
+		isHidden
+		summarizeBy: none
+		sourceColumn: alert_count
+
+	partition 'Asset Daily Status' = entity
+		mode: directLake
+		source
+			entityName: fact_asset_daily_status
+			schemaName: gold
+			expressionSource: DirectLakeSource

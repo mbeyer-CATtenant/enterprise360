@@ -1,0 +1,17 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	discourageImplicitMeasures
+
+ref table Date
+ref table Customer
+ref table Product
+ref table 'Part Product'
+ref table Facility
+ref table Employee
+ref table Technician
+ref table Asset
+ref table 'Work Orders'
+ref table 'Work Order Parts'
+ref table 'Asset Daily Status'

@@ -1,0 +1,42 @@
+/// Routes through which customers place commercial orders.
+table 'Sales Channel'
+
+	/// Integer relationship key optimized for Direct Lake joins.
+	column 'Sales Channel Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: sales_channel_key
+
+	/// Stable sales-channel identifier.
+	column 'Sales Channel ID'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: sales_channel_id
+
+	/// Business-facing sales-channel name.
+	column 'Sales Channel Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: sales_channel_name
+
+	/// Broader channel grouping used in executive reporting.
+	column 'Channel Group'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: channel_group
+
+	/// Current channel lifecycle status.
+	column Status
+		dataType: string
+		summarizeBy: none
+		sourceColumn: status
+
+	partition 'Sales Channel' = entity
+		mode: directLake
+		source
+			entityName: dim_sales_channel
+			schemaName: gold
+			expressionSource: DirectLakeSource

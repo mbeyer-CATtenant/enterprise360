@@ -1,0 +1,136 @@
+/// Commercial order headers at one row per sales order.
+table Orders
+
+	/// Number of sales orders in the current filter context.
+	measure '# Orders' = COUNTROWS(Orders)
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Number of sales orders that remain open.
+	measure '# Open Orders' = CALCULATE(COUNTROWS(Orders), KEEPFILTERS(Orders[Order Status] = "Open"))
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Number of completed sales orders.
+	measure '# Completed Orders' = CALCULATE(COUNTROWS(Orders), KEEPFILTERS(Orders[Order Status] = "Completed"))
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Average revenue value of an order before cancellation adjustments.
+	measure 'Average Order Value' = AVERAGE(Orders[Order Revenue])
+		formatString: $#,##0.00
+		displayFolder: Measures\Value
+
+	/// Percentage of orders with a cancelled status.
+	measure 'Cancellation Rate' = ```
+			VAR _cancelledOrders =
+				CALCULATE(
+					COUNTROWS(Orders),
+					KEEPFILTERS(Orders[Order Status] = "Cancelled")
+				)
+			RETURN
+				DIVIDE(_cancelledOrders, [# Orders])
+			```
+		formatString: 0.00%
+		displayFolder: Measures\Rates
+
+	/// Integer order key optimized for Direct Lake joins.
+	column 'Sales Order Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: sales_order_key
+
+	/// Stable sales-order identifier used to connect order lines.
+	column 'Sales Order ID'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: sales_order_id
+
+	/// Integer customer relationship key.
+	column 'Customer Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: customer_key
+
+	/// Customer relationship key.
+	column 'Customer ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: customer_id
+
+	/// Integer sales-channel relationship key.
+	column 'Sales Channel Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: sales_channel_key
+
+	/// Sales-channel relationship key.
+	column 'Sales Channel ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: sales_channel_id
+
+	/// Date on which the customer placed the order.
+	column 'Order Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: order_date
+
+	/// Date by which the customer requested fulfillment.
+	column 'Requested Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: requested_date
+
+	/// Transaction currency used by the synthetic dataset.
+	column 'Currency Code'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: currency_code
+
+	/// Current commercial fulfillment status.
+	column 'Order Status'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: order_status
+
+	/// Revenue recorded on the order header.
+	column 'Order Revenue'
+		dataType: decimal
+		isHidden
+		summarizeBy: none
+		sourceColumn: order_revenue
+
+	/// Cost recorded on the order header.
+	column 'Order Cost'
+		dataType: decimal
+		isHidden
+		summarizeBy: none
+		sourceColumn: order_cost
+
+	/// Revenue less cost at the order-header grain.
+	column 'Gross Margin Value'
+		dataType: decimal
+		isHidden
+		summarizeBy: none
+		sourceColumn: gross_margin
+
+	partition Orders = entity
+		mode: directLake
+		source
+			entityName: fact_sales_order
+			schemaName: gold
+			expressionSource: DirectLakeSource

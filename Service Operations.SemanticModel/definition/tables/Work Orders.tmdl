@@ -1,0 +1,174 @@
+/// Service activity at one row per asset work order.
+table 'Work Orders'
+
+	/// Number of service work orders.
+	measure '# Work Orders' = COUNTROWS('Work Orders')
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Number of work orders that remain open or are waiting for parts.
+	measure '# Open Work Orders' = ```
+			CALCULATE(
+				COUNTROWS('Work Orders'),
+				KEEPFILTERS(
+					'Work Orders'[Work Order Status] IN { "Open", "Waiting for Parts" }
+				)
+			)
+			```
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Number of work orders marked completed.
+	measure '# Completed Work Orders' = CALCULATE(COUNTROWS('Work Orders'), KEEPFILTERS('Work Orders'[Work Order Status] = "Completed"))
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Total technician labor cost recorded on work orders.
+	measure 'Labor Cost' = SUM('Work Orders'[Labor Cost Value])
+		formatString: $#,##0.00
+		displayFolder: Measures\Value
+
+	/// Total repair and maintenance duration in hours.
+	measure 'Service Duration Hours' = SUM('Work Orders'[Duration Hours])
+		formatString: #,##0.00
+		displayFolder: Measures\Duration
+
+	/// Mean time to repair for completed work orders.
+	measure 'Mean Time to Repair Hours' = ```
+			CALCULATE(
+				AVERAGE('Work Orders'[Duration Hours]),
+				KEEPFILTERS('Work Orders'[Work Order Status] = "Completed")
+			)
+			```
+		formatString: #,##0.00
+		displayFolder: Measures\Duration
+
+	/// Percentage of completed work orders resolved within priority-based targets.
+	measure 'Service Level Compliance' = ```
+			VAR _completedOrders =
+				FILTER(
+					'Work Orders',
+					'Work Orders'[Work Order Status] = "Completed"
+				)
+			VAR _compliantOrders =
+				FILTER(
+					_completedOrders,
+					VAR _targetDays =
+						SWITCH(
+							'Work Orders'[Priority],
+							"Critical", 2,
+							"High", 3,
+							5
+						)
+					RETURN
+						DATEDIFF(
+							'Work Orders'[Opened Date],
+							'Work Orders'[Resolved Date],
+							DAY
+						) <= _targetDays
+				)
+			RETURN
+				DIVIDE(COUNTROWS(_compliantOrders), COUNTROWS(_completedOrders))
+			```
+		formatString: 0.00%
+		displayFolder: Measures\Rates
+
+	/// Integer work-order key optimized for Direct Lake joins.
+	column 'Work Order Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: work_order_key
+
+	/// Stable work-order identifier used to connect consumed parts.
+	column 'Work Order ID'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: work_order_id
+
+	/// Integer asset relationship key.
+	column 'Asset Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: asset_key
+
+	/// Asset relationship key.
+	column 'Asset ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: asset_id
+
+	/// Integer technician relationship key.
+	column 'Technician Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: technician_key
+
+	/// Technician relationship key.
+	column 'Technician ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: technician_id
+
+	/// Date on which service work began.
+	column 'Opened Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: opened_date
+
+	/// Operational priority assigned to the work order.
+	column Priority
+		dataType: string
+		summarizeBy: none
+		sourceColumn: priority
+
+	/// Service category such as preventive or corrective work.
+	column 'Work Order Type'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: work_order_type
+
+	/// Total elapsed service duration used by explicit measures.
+	column 'Duration Hours'
+		dataType: decimal
+		isHidden
+		summarizeBy: none
+		sourceColumn: duration_hours
+
+	/// Date on which the service work was resolved.
+	column 'Resolved Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: resolved_date
+
+	/// Current execution status.
+	column 'Work Order Status'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: work_order_status
+
+	/// Extended technician labor expense used by explicit measures.
+	column 'Labor Cost Value'
+		dataType: decimal
+		isHidden
+		summarizeBy: none
+		sourceColumn: labor_cost
+
+	partition 'Work Orders' = entity
+		mode: directLake
+		source
+			entityName: fact_work_order
+			schemaName: gold
+			expressionSource: DirectLakeSource

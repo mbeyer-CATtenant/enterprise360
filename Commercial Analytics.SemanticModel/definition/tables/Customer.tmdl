@@ -1,0 +1,100 @@
+/// Organizations purchasing products and services from the enterprise.
+table Customer
+
+	/// Number of customers currently marked active.
+	measure '# Active Customers' = CALCULATE(COUNTROWS(Customer), KEEPFILTERS(Customer[Status] = "Active"))
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Integer relationship key optimized for Direct Lake joins.
+	column 'Customer Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: customer_key
+
+	/// Stable customer identifier used by model relationships.
+	column 'Customer ID'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: customer_id
+
+	/// Customer organization name.
+	column 'Customer Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: customer_name
+
+	/// Commercial segment assigned to the customer.
+	column 'Customer Segment'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: customer_segment
+
+	/// Primary industry in which the customer operates.
+	column Industry
+		dataType: string
+		summarizeBy: none
+		sourceColumn: industry
+
+	/// Enterprise operating region assigned to the customer.
+	column Region
+		dataType: string
+		summarizeBy: none
+		sourceColumn: region_code
+
+	/// Two-letter country code for the customer.
+	column Country
+		dataType: string
+		dataCategory: Country
+		summarizeBy: none
+		sourceColumn: country_code
+
+	/// Customer city used for geographic analysis.
+	column City
+		dataType: string
+		dataCategory: City
+		summarizeBy: none
+		sourceColumn: city
+
+	/// Synthetic annual revenue used to classify account size.
+	column 'Annual Revenue'
+		dataType: decimal
+		formatString: $#,##0.00
+		summarizeBy: none
+		sourceColumn: annual_revenue
+
+	/// Current commercial risk classification.
+	column 'Risk Tier'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: risk_tier
+
+	/// Current customer lifecycle status.
+	column Status
+		dataType: string
+		summarizeBy: none
+		sourceColumn: status
+
+	/// Date on which the customer record was created.
+	column 'Created On'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: created_on
+
+	/// Date on which the customer record was last modified.
+	column 'Modified On'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: modified_on
+
+	partition Customer = entity
+		mode: directLake
+		source
+			entityName: dim_customer
+			schemaName: gold
+			expressionSource: DirectLakeSource
