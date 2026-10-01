@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Ontology",
+    "displayName": "enterprise360_ontology"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "33d0a1ac-276d-9eeb-4708-38c9e95fca69"
+  }
+}
