@@ -1,26 +1,31 @@
 /// Installed equipment and vehicles owned by customers and serviced by the enterprise.
 table Asset
+	lineageTag: 1f6d1260-381d-4f66-8bf2-9ea79b6707b2
 
 	/// Number of installed customer assets.
 	measure '# Assets' = COUNTROWS(Asset)
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: f2d4f7d5-6dd6-4439-aab2-64cecd02f404
 
 	/// Number of assets classified as operationally critical.
 	measure '# Critical Assets' = CALCULATE(COUNTROWS(Asset), KEEPFILTERS(Asset[Criticality] = "Critical"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 0eeee41a-12c9-4ead-bde5-3c08fb911487
 
 	/// Number of assets currently out of service.
 	measure '# Assets Out of Service' = CALCULATE(COUNTROWS(Asset), KEEPFILTERS(Asset[Status] = "Out of Service"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: ed126dcf-e9d0-45ef-84e2-2dd338aae555
 
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Asset Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: dd92dc65-2ea4-4ee2-9791-9d636b4def9b
 		summarizeBy: none
 		sourceColumn: asset_key
 
@@ -28,12 +33,14 @@ table Asset
 	column 'Asset ID'
 		dataType: string
 		isHidden
+		lineageTag: 2e0f68e0-1a81-4212-ba19-c174cace76d5
 		summarizeBy: none
 		sourceColumn: asset_id
 
 	/// Manufacturer serial number for an installed asset.
 	column 'Serial Number'
 		dataType: string
+		lineageTag: f6166c82-f646-4603-b3ca-f7428a9157ea
 		summarizeBy: none
 		sourceColumn: serial_number
 
@@ -42,6 +49,7 @@ table Asset
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: aecd7a28-60ce-4aed-a87c-428f8c4d3d3a
 		summarizeBy: none
 		sourceColumn: customer_key
 
@@ -50,6 +58,7 @@ table Asset
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: d0e39d76-0168-413c-8544-cced71f6c91c
 		summarizeBy: none
 		sourceColumn: customer_id
 
@@ -58,6 +67,7 @@ table Asset
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: ae1ab219-0bff-4d16-85f2-0b0c5947b3e1
 		summarizeBy: none
 		sourceColumn: product_key
 
@@ -66,6 +76,7 @@ table Asset
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 6a4f57e7-5990-43d6-a14b-5e95f69abf7a
 		summarizeBy: none
 		sourceColumn: product_id
 
@@ -74,6 +85,7 @@ table Asset
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 792cc288-8e23-4a44-b70a-0575a8009ead
 		summarizeBy: none
 		sourceColumn: facility_key
 
@@ -82,12 +94,14 @@ table Asset
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: d89cef76-28bf-46cb-8109-45666c7759c8
 		summarizeBy: none
 		sourceColumn: facility_id
 
 	/// Asset specialization used by ontology inheritance.
 	column 'Asset Type'
 		dataType: string
+		lineageTag: 2836afd5-3cbe-47d2-afb1-022aecfedebd
 		summarizeBy: none
 		sourceColumn: asset_type
 
@@ -95,6 +109,7 @@ table Asset
 	column 'Install Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: e88ba7ca-f09d-480b-ab62-61ef059f895f
 		summarizeBy: none
 		sourceColumn: install_date
 
@@ -102,18 +117,21 @@ table Asset
 	column 'Warranty Expiry'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 1f27dbf9-8e7b-4bc9-a8fe-0e3ee22878ed
 		summarizeBy: none
 		sourceColumn: warranty_expiry
 
 	/// Operational impact classification.
 	column Criticality
 		dataType: string
+		lineageTag: 0f989e0b-02ca-4d35-bffe-434c7ce608ec
 		summarizeBy: none
 		sourceColumn: criticality
 
 	/// Current operational status.
 	column Status
 		dataType: string
+		lineageTag: 59185906-a316-43dd-8118-04bf2b2b7716
 		summarizeBy: none
 		sourceColumn: status
 
@@ -121,6 +139,7 @@ table Asset
 	column 'Created On'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 97f022ce-a689-415f-b9b0-e16dbb1f4c65
 		summarizeBy: none
 		sourceColumn: created_on
 
@@ -128,6 +147,7 @@ table Asset
 	column 'Modified On'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 547a08ea-1bb8-4164-9673-67b679faa3e5
 		summarizeBy: none
 		sourceColumn: modified_on
 
@@ -137,3 +157,4 @@ table Asset
 			entityName: dim_asset
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

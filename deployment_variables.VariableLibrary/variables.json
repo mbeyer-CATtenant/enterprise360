@@ -1,0 +1,14 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/variableLibrary/definition/variables/1.0.0/schema.json",
+  "variables": [
+    {
+      "name": "enterprise360_lh",
+      "note": "",
+      "type": "ItemReference",
+      "value": {
+        "itemId": "45e498e1-6aaf-42e0-b0a1-926b4c34cf22",
+        "workspaceId": "e809baaa-4226-4e06-93a2-26cfb3476f49"
+      }
+    }
+  ]
+}

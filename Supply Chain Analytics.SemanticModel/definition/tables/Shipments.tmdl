@@ -1,18 +1,21 @@
 /// Outbound shipment events supporting order fulfillment analysis.
 table Shipments
+	lineageTag: dff926f8-5611-4251-b13b-b80736cc48ed
 
 	/// Number of shipment records.
 	measure '# Shipments' = COUNTROWS(Shipments)
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 970f8377-c5db-419d-abf2-bac07f5ed604
 
 	/// Number of shipments marked delivered.
 	measure '# Delivered Shipments' = CALCULATE(COUNTROWS(Shipments), KEEPFILTERS(Shipments[Shipment Status] = "Delivered"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: e1241198-4142-49de-996e-702f072c6122
 
 	/// Percentage of delivered shipments arriving by the promised date.
-	measure 'On-Time Delivery Rate' = ```
+	measure 'On-Time Delivery Rate' =
 			VAR _deliveredShipments = [# Delivered Shipments]
 			VAR _onTimeShipments =
 				CALCULATE(
@@ -22,17 +25,18 @@ table Shipments
 				)
 			RETURN
 				DIVIDE(_onTimeShipments, _deliveredShipments)
-			```
 		formatString: 0.00%
 		displayFolder: Measures\Rates
+		lineageTag: ce9cac62-480b-4e76-b475-02644b9a37cb
 
 	/// Total outbound freight expense.
 	measure 'Freight Cost' = SUM(Shipments[Freight Cost Value])
 		formatString: $#,##0.00
 		displayFolder: Measures\Value
+		lineageTag: 1406029b-aa13-4640-9fd4-e75ef058b8e7
 
 	/// Percentage of shipments currently or previously marked for quality hold.
-	measure 'Quality Hold Rate' = ```
+	measure 'Quality Hold Rate' =
 			VAR _qualityHolds =
 				CALCULATE(
 					COUNTROWS(Shipments),
@@ -40,21 +44,23 @@ table Shipments
 				)
 			RETURN
 				DIVIDE(_qualityHolds, [# Shipments])
-			```
 		formatString: 0.00%
 		displayFolder: Measures\Rates
+		lineageTag: 18084961-008f-4580-b87d-ffb4f78758f4
 
 	/// Stable shipment identifier.
 	column 'Shipment ID'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 40a5a8e1-2226-4dfa-9fce-2ea29836add1
 		summarizeBy: none
 		sourceColumn: shipment_id
 
 	/// Sales-order identifier associated with the shipment.
 	column 'Sales Order ID'
 		dataType: string
+		lineageTag: 731ccd38-c1eb-4c27-a69a-ec971d5db351
 		summarizeBy: none
 		sourceColumn: sales_order_id
 
@@ -63,6 +69,7 @@ table Shipments
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: e10d2504-be7e-4ff1-b0ae-46855535f1ef
 		summarizeBy: none
 		sourceColumn: facility_key
 
@@ -71,12 +78,14 @@ table Shipments
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: a8eb26ab-3919-4147-81f2-2bebf2ff989b
 		summarizeBy: none
 		sourceColumn: facility_id
 
 	/// Logistics provider responsible for the shipment.
 	column Carrier
 		dataType: string
+		lineageTag: 626027ac-bbe6-45c6-a744-7c245f1569b6
 		summarizeBy: none
 		sourceColumn: carrier_name
 
@@ -84,6 +93,7 @@ table Shipments
 	column 'Ship Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 3011320e-5ab0-4cbf-88dc-534a3e2a9160
 		summarizeBy: none
 		sourceColumn: ship_date
 
@@ -91,6 +101,7 @@ table Shipments
 	column 'Promised Delivery Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 45a2921b-d09c-4c27-89b8-1dd5b0530a4b
 		summarizeBy: none
 		sourceColumn: promised_delivery_date
 
@@ -98,6 +109,7 @@ table Shipments
 	column 'Actual Delivery Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 143afa1e-65d8-466a-b1c0-2f052b8306d5
 		summarizeBy: none
 		sourceColumn: actual_delivery_date
 
@@ -105,18 +117,21 @@ table Shipments
 	column 'Freight Cost Value'
 		dataType: decimal
 		isHidden
+		lineageTag: 473f003a-006d-4bbc-999c-005e72906484
 		summarizeBy: none
 		sourceColumn: freight_cost
 
 	/// Identifies shipments blocked for quality review.
 	column 'Quality Hold'
 		dataType: boolean
+		lineageTag: cc013b84-2bfe-4994-9716-ad3e03d7e6b9
 		summarizeBy: none
 		sourceColumn: quality_hold
 
 	/// Current logistics status.
 	column 'Shipment Status'
 		dataType: string
+		lineageTag: bb5fade1-c82f-4646-96ae-9bbd5f6c204f
 		summarizeBy: none
 		sourceColumn: shipment_status
 
@@ -126,3 +141,4 @@ table Shipments
 			entityName: fact_shipment
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

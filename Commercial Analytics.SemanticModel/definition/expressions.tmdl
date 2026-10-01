@@ -1,8 +1,10 @@
 expression DirectLakeSource =
 		let
 			Source = AzureStorage.DataLake(
-				"https://onelake.dfs.fabric.microsoft.com/e809baaa-4226-4e06-93a2-26cfb3476f49/45e498e1-6aaf-42e0-b0a1-926b4c34cf22",
+				"https://onelake.dfs.fabric.microsoft.com/f67449c0-f1b7-490e-96a0-61546d2d4243/058df577-c564-478c-b256-d32eada71724",
 				[HierarchicalNavigation=true]
 			)
 		in
 			Source
+	lineageTag: 3dcddf94-dca0-400d-83fd-2e2412d467e9
+

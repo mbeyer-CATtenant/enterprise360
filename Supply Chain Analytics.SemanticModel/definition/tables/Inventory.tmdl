@@ -1,41 +1,49 @@
 /// Inventory position snapshots by product, facility, and date.
 table Inventory
+	lineageTag: 7415fa5f-85e4-4d98-82cc-518147dd7155
 
 	/// Total physical units recorded on hand.
 	measure 'Quantity on Hand' = SUM(Inventory[Quantity on Hand Value])
 		formatString: #,##0
 		displayFolder: Measures\Quantity
+		lineageTag: 0dc6b1f7-5e78-45e9-bf6e-5f16f58a8f9b
 
 	/// Total inventory units allocated to demand.
 	measure 'Allocated Quantity' = SUM(Inventory[Allocated Quantity Value])
 		formatString: #,##0
 		displayFolder: Measures\Quantity
+		lineageTag: 929ea024-b848-4030-b3e5-62e3422e06f1
 
 	/// Inventory units remaining after current allocations.
 	measure 'Available Quantity' = [Quantity on Hand] - [Allocated Quantity]
 		formatString: #,##0
 		displayFolder: Measures\Quantity
+		lineageTag: b17c08b6-7308-4001-be34-4f83d4dd3a9d
 
 	/// Standard-cost value of inventory on hand.
 	measure 'Inventory Value' = SUMX(Inventory, Inventory[Quantity on Hand Value] * RELATED(Product[Standard Cost]))
 		formatString: $#,##0.00
 		displayFolder: Measures\Value
+		lineageTag: 0a2945a7-432e-40ec-90a7-de95492ca277
 
 	/// Number of product-facility snapshots below safety stock.
 	measure '# Stockout Snapshots' = CALCULATE(COUNTROWS(Inventory), KEEPFILTERS(Inventory[Stockout Flag] = TRUE()))
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: a3e3cc21-c0dd-4c8a-8d08-7b49de98908d
 
 	/// Percentage of inventory snapshots below safety stock.
 	measure 'Stockout Rate' = DIVIDE([# Stockout Snapshots], COUNTROWS(Inventory))
 		formatString: 0.00%
 		displayFolder: Measures\Rates
+		lineageTag: 44807d2f-31a1-4fc1-841c-c0a29b9cc1ac
 
 	/// Stable inventory-snapshot identifier.
 	column 'Inventory Snapshot ID'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 5c170c9d-10e1-458c-9a73-8a0de8f6c479
 		summarizeBy: none
 		sourceColumn: inventory_snapshot_id
 
@@ -43,6 +51,7 @@ table Inventory
 	column 'Snapshot Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 186eb17d-3740-416f-82b5-1e1d094e324a
 		summarizeBy: none
 		sourceColumn: snapshot_date
 
@@ -51,6 +60,7 @@ table Inventory
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: b0580c43-f007-4be9-a3f9-6b64d0d46ae2
 		summarizeBy: none
 		sourceColumn: facility_key
 
@@ -59,6 +69,7 @@ table Inventory
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: fb17750e-22f1-4e9f-adc0-739f3ac2ebd6
 		summarizeBy: none
 		sourceColumn: facility_id
 
@@ -67,6 +78,7 @@ table Inventory
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 0f850291-6508-4049-8bbd-7792211c84c7
 		summarizeBy: none
 		sourceColumn: product_key
 
@@ -75,6 +87,7 @@ table Inventory
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 339fede9-6b65-4744-bc02-db151ab157c2
 		summarizeBy: none
 		sourceColumn: product_id
 
@@ -82,6 +95,7 @@ table Inventory
 	column 'Quantity on Hand Value'
 		dataType: int64
 		isHidden
+		lineageTag: cf209d42-d857-4b1c-beaa-4014aedde0c1
 		summarizeBy: none
 		sourceColumn: quantity_on_hand
 
@@ -89,6 +103,7 @@ table Inventory
 	column 'Allocated Quantity Value'
 		dataType: int64
 		isHidden
+		lineageTag: 3458d403-2bc7-4793-b840-d3b81020ff16
 		summarizeBy: none
 		sourceColumn: quantity_allocated
 
@@ -96,6 +111,7 @@ table Inventory
 	column 'Safety Stock Quantity'
 		dataType: int64
 		formatString: #,##0
+		lineageTag: 203a6ab4-e668-4a6b-85a3-2a85cf65f1b8
 		summarizeBy: none
 		sourceColumn: safety_stock_quantity
 
@@ -103,12 +119,14 @@ table Inventory
 	column 'Reorder Point'
 		dataType: int64
 		formatString: #,##0
+		lineageTag: c5f91666-8216-482c-b214-2d4462da1998
 		summarizeBy: none
 		sourceColumn: reorder_point
 
 	/// Identifies a snapshot below its safety-stock level.
 	column 'Stockout Flag'
 		dataType: boolean
+		lineageTag: b1471b33-b4c4-42d0-bea0-e9dd49853c59
 		summarizeBy: none
 		sourceColumn: stockout_flag
 
@@ -118,3 +136,4 @@ table Inventory
 			entityName: fact_inventory_snapshot
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

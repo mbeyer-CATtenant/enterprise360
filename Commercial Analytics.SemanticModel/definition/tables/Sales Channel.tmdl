@@ -1,11 +1,13 @@
 /// Routes through which customers place commercial orders.
 table 'Sales Channel'
+	lineageTag: 9ea77560-5173-4fda-bfd4-63d1dd2ab373
 
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Sales Channel Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 733b4630-55a0-4cdd-9ded-08cdd6c9cfb7
 		summarizeBy: none
 		sourceColumn: sales_channel_key
 
@@ -13,24 +15,28 @@ table 'Sales Channel'
 	column 'Sales Channel ID'
 		dataType: string
 		isHidden
+		lineageTag: e0898e67-bb1d-43ca-b1fd-349709706018
 		summarizeBy: none
 		sourceColumn: sales_channel_id
 
 	/// Business-facing sales-channel name.
 	column 'Sales Channel Name'
 		dataType: string
+		lineageTag: e6c13e60-f4de-4f90-8de3-8c77d1e4847f
 		summarizeBy: none
 		sourceColumn: sales_channel_name
 
 	/// Broader channel grouping used in executive reporting.
 	column 'Channel Group'
 		dataType: string
+		lineageTag: 4de5c4a6-448a-4e97-8f41-1bef16790f1e
 		summarizeBy: none
 		sourceColumn: channel_group
 
 	/// Current channel lifecycle status.
 	column Status
 		dataType: string
+		lineageTag: a205bb4e-6c37-4b80-9f8e-1864f7b22821
 		summarizeBy: none
 		sourceColumn: status
 
@@ -40,3 +46,4 @@ table 'Sales Channel'
 			entityName: dim_sales_channel
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

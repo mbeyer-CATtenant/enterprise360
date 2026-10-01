@@ -1,26 +1,31 @@
 /// Replacement parts consumed by service work orders.
 table 'Work Order Parts'
+	lineageTag: 20dcdf8c-26f7-45bf-bf50-505d3f3ba676
 
 	/// Extended standard cost of parts consumed by service work.
 	measure 'Parts Cost' = SUM('Work Order Parts'[Part Cost Value])
 		formatString: $#,##0.00
 		displayFolder: Measures\Value
+		lineageTag: 2eff9bbd-49e0-4dde-8e12-c7f0265c260c
 
 	/// Number of replacement-part units consumed.
 	measure 'Parts Used' = SUM('Work Order Parts'[Quantity Used])
 		formatString: #,##0
 		displayFolder: Measures\Quantity
+		lineageTag: 506a1405-9b92-4fe1-8f95-744ce891d099
 
 	/// Number of work-order part lines.
 	measure '# Work Order Part Lines' = COUNTROWS('Work Order Parts')
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 96820d13-3c05-488b-8852-972f126693db
 
 	/// Stable work-order-part identifier.
 	column 'Work Order Part ID'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 33af8002-da5e-45fa-b136-616a13decd3a
 		summarizeBy: none
 		sourceColumn: work_order_part_id
 
@@ -29,6 +34,7 @@ table 'Work Order Parts'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: da522fd5-fdc1-4cac-9fa1-ac8ad85f8c2f
 		summarizeBy: none
 		sourceColumn: work_order_key
 
@@ -37,6 +43,7 @@ table 'Work Order Parts'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 669810a2-babd-4e56-bee9-8ef00d8e3827
 		summarizeBy: none
 		sourceColumn: work_order_id
 
@@ -45,6 +52,7 @@ table 'Work Order Parts'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 1dd8d377-94a2-4171-a7da-59a387830945
 		summarizeBy: none
 		sourceColumn: product_key
 
@@ -53,6 +61,7 @@ table 'Work Order Parts'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 400957fd-658f-4319-a2a7-8fb41d8dca65
 		summarizeBy: none
 		sourceColumn: product_id
 
@@ -60,6 +69,7 @@ table 'Work Order Parts'
 	column 'Quantity Used'
 		dataType: int64
 		isHidden
+		lineageTag: 3204f682-bf6f-45ef-b0d1-bbc6a5a163a4
 		summarizeBy: none
 		sourceColumn: quantity_used
 
@@ -67,6 +77,7 @@ table 'Work Order Parts'
 	column 'Part Cost Value'
 		dataType: decimal
 		isHidden
+		lineageTag: 6bdb8e1f-3746-468a-b361-3ec1e1200568
 		summarizeBy: none
 		sourceColumn: part_cost
 
@@ -76,3 +87,4 @@ table 'Work Order Parts'
 			entityName: fact_work_order_part
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

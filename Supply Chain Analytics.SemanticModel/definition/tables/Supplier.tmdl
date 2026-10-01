@@ -1,16 +1,19 @@
 /// Organizations providing products and replacement parts to the enterprise.
 table Supplier
+	lineageTag: d199ffbb-d6a1-4eae-827f-cc07a511d6f9
 
 	/// Number of suppliers currently available for procurement.
 	measure '# Active Suppliers' = CALCULATE(COUNTROWS(Supplier), KEEPFILTERS(Supplier[Status] = "Active"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 04ee5b9c-bc24-4bca-b75b-017f75a96483
 
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Supplier Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 78de691a-e9be-4646-916e-2ac6a6290ef6
 		summarizeBy: none
 		sourceColumn: supplier_key
 
@@ -18,24 +21,28 @@ table Supplier
 	column 'Supplier ID'
 		dataType: string
 		isHidden
+		lineageTag: ab814630-9b56-461b-afa5-51a4c3559a28
 		summarizeBy: none
 		sourceColumn: supplier_id
 
 	/// Business-facing supplier name.
 	column 'Supplier Name'
 		dataType: string
+		lineageTag: 97e354dd-9ddf-4c1e-8004-45f7f08c351f
 		summarizeBy: none
 		sourceColumn: supplier_name
 
 	/// Enterprise operating region assigned to the supplier.
 	column Region
 		dataType: string
+		lineageTag: d6f34bc6-a042-428e-a5c0-bcc34f461316
 		summarizeBy: none
 		sourceColumn: region_code
 
 	/// Two-letter supplier country code.
 	column Country
 		dataType: string
+		lineageTag: 77f5591d-7fba-4840-88f7-cdb126a917dd
 		dataCategory: Country
 		summarizeBy: none
 		sourceColumn: country_code
@@ -43,6 +50,7 @@ table Supplier
 	/// Procurement classification indicating approval preference.
 	column 'Supplier Tier'
 		dataType: string
+		lineageTag: 50277347-611c-4d16-b9c9-1bbcf7a793ff
 		summarizeBy: none
 		sourceColumn: supplier_tier
 
@@ -50,12 +58,14 @@ table Supplier
 	column 'Contract Start Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 69409784-5708-48c7-9ae3-34797368bb9d
 		summarizeBy: none
 		sourceColumn: contract_start_date
 
 	/// Current procurement lifecycle status.
 	column Status
 		dataType: string
+		lineageTag: eb6c4d05-7fc5-4a93-b3af-04cdb8571109
 		summarizeBy: none
 		sourceColumn: status
 
@@ -63,6 +73,7 @@ table Supplier
 	column 'Created On'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: b335e729-3ec7-4cd5-829f-a3b97c230231
 		summarizeBy: none
 		sourceColumn: created_on
 
@@ -70,6 +81,7 @@ table Supplier
 	column 'Modified On'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: b7e593a3-682b-44b7-b892-076a86dd29a4
 		summarizeBy: none
 		sourceColumn: modified_on
 
@@ -79,3 +91,4 @@ table Supplier
 			entityName: dim_supplier
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

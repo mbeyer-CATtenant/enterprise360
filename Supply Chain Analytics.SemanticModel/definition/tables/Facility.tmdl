@@ -1,11 +1,13 @@
 /// Plants, distribution centers, and service hubs operated by the enterprise.
 table Facility
+	lineageTag: b1bdc21c-ac74-44cb-86fb-0a601dce8ad7
 
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Facility Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 0ae0cae5-0e7d-480d-bc0c-f4625edc8121
 		summarizeBy: none
 		sourceColumn: facility_key
 
@@ -13,30 +15,35 @@ table Facility
 	column 'Facility ID'
 		dataType: string
 		isHidden
+		lineageTag: 895984b8-004a-4ed9-93e0-5bdbd87d7893
 		summarizeBy: none
 		sourceColumn: facility_id
 
 	/// Business-facing facility name.
 	column 'Facility Name'
 		dataType: string
+		lineageTag: c138a0b8-288d-409b-9395-0502e9f4207a
 		summarizeBy: none
 		sourceColumn: facility_name
 
 	/// Operational purpose of the facility.
 	column 'Facility Type'
 		dataType: string
+		lineageTag: a5f88ad6-3497-45ab-8b4e-6be2eaa2fc94
 		summarizeBy: none
 		sourceColumn: facility_type
 
 	/// Enterprise operating region assigned to the facility.
 	column Region
 		dataType: string
+		lineageTag: ca735694-388a-45b3-9981-f160e5cfdee8
 		summarizeBy: none
 		sourceColumn: region_code
 
 	/// Two-letter facility country code.
 	column Country
 		dataType: string
+		lineageTag: 2344b264-e925-4505-bbad-f34133795381
 		dataCategory: Country
 		summarizeBy: none
 		sourceColumn: country_code
@@ -44,6 +51,7 @@ table Facility
 	/// Facility city used for geographic analysis.
 	column City
 		dataType: string
+		lineageTag: e7b60d8d-20a8-45fa-84c5-8523506c8331
 		dataCategory: City
 		summarizeBy: none
 		sourceColumn: city
@@ -52,12 +60,14 @@ table Facility
 	column 'Capacity Units'
 		dataType: int64
 		formatString: #,##0
+		lineageTag: 81605587-41cd-4812-b3e5-2219709d0d7d
 		summarizeBy: none
 		sourceColumn: capacity_units
 
 	/// Current facility lifecycle status.
 	column Status
 		dataType: string
+		lineageTag: abb1565c-438f-4274-a7d1-b3b6cbb2d1a3
 		summarizeBy: none
 		sourceColumn: status
 
@@ -67,3 +77,4 @@ table Facility
 			entityName: dim_facility
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

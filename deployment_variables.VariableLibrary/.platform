@@ -1,11 +1,11 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
   "metadata": {
-    "type": "SemanticModel",
-    "displayName": "Service Operations"
+    "type": "VariableLibrary",
+    "displayName": "deployment_variables"
   },
   "config": {
     "version": "2.0",
-    "logicalId": "96239303-c398-4d8a-b835-b8e094975b28"
+    "logicalId": "60495f8f-e3af-4d69-8ed1-74c76a02013b"
   }
 }

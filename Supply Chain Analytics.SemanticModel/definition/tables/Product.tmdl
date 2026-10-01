@@ -1,11 +1,13 @@
 /// Products, equipment, vehicles, controls, sensors, and replacement parts sold by the enterprise.
 table Product
+	lineageTag: c60f63ed-9d4e-42c0-94e6-20633db676fc
 
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Product Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: c57452f5-9065-4bb5-a092-3967f8eb8dda
 		summarizeBy: none
 		sourceColumn: product_key
 
@@ -13,30 +15,35 @@ table Product
 	column 'Product ID'
 		dataType: string
 		isHidden
+		lineageTag: 9c7ecad9-feaa-4a48-b5a1-ba11c3f6688e
 		summarizeBy: none
 		sourceColumn: product_id
 
 	/// Stock keeping unit used in commercial processes.
 	column SKU
 		dataType: string
+		lineageTag: 43d2e368-450a-4a49-8cca-b59e3402b225
 		summarizeBy: none
 		sourceColumn: sku
 
 	/// Business-facing product name.
 	column 'Product Name'
 		dataType: string
+		lineageTag: 2a04bf68-5f1a-4509-8c48-43548c323e65
 		summarizeBy: none
 		sourceColumn: product_name
 
 	/// High-level product classification.
 	column 'Product Category'
 		dataType: string
+		lineageTag: 7b0906c6-9ad1-4f16-8932-58f4bd349cd5
 		summarizeBy: none
 		sourceColumn: product_category
 
 	/// Product family used for portfolio analysis.
 	column 'Product Family'
 		dataType: string
+		lineageTag: 58cd9742-7bab-4859-86dc-ddcf74b677b2
 		summarizeBy: none
 		sourceColumn: product_family
 
@@ -44,6 +51,7 @@ table Product
 	column 'Standard Cost'
 		dataType: decimal
 		formatString: $#,##0.00
+		lineageTag: b4423e41-6bef-4d7f-acfe-3612005806d0
 		summarizeBy: none
 		sourceColumn: standard_cost
 
@@ -51,6 +59,7 @@ table Product
 	column 'List Price'
 		dataType: decimal
 		formatString: $#,##0.00
+		lineageTag: ca039f4d-1ef9-4cac-9aa5-e72e4381061d
 		summarizeBy: none
 		sourceColumn: list_price
 
@@ -58,6 +67,7 @@ table Product
 	column 'Lead Time Days'
 		dataType: int64
 		formatString: 0
+		lineageTag: 95379bd7-a1f3-475d-b614-23096a9648cc
 		summarizeBy: none
 		sourceColumn: lead_time_days
 
@@ -65,18 +75,21 @@ table Product
 	column 'Weight Kilograms'
 		dataType: decimal
 		formatString: #,##0.00
+		lineageTag: c25a87b5-3fc9-4acd-84ed-dcba7843b7ec
 		summarizeBy: none
 		sourceColumn: weight_kg
 
 	/// Identifies parts that are operationally critical.
 	column 'Critical Spare'
 		dataType: boolean
+		lineageTag: fae0c82b-41b7-4cb8-a678-11c7993db6e6
 		summarizeBy: none
 		sourceColumn: critical_spare
 
 	/// Current product lifecycle status.
 	column Status
 		dataType: string
+		lineageTag: 5a2f8689-83e4-47f1-9055-4e4fec326632
 		summarizeBy: none
 		sourceColumn: status
 
@@ -86,3 +99,4 @@ table Product
 			entityName: dim_product
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

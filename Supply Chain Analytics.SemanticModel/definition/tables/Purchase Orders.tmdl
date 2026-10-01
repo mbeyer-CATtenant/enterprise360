@@ -1,33 +1,39 @@
 /// Procurement detail at one row per purchase-order line.
 table 'Purchase Orders'
+	lineageTag: 9f461146-5aad-401e-8fb2-c91eb4bb1b9a
 
 	/// Extended procurement value based on ordered quantity and unit cost.
 	measure 'Purchased Value' = SUMX('Purchase Orders', 'Purchase Orders'[Ordered Quantity] * 'Purchase Orders'[Unit Cost])
 		formatString: $#,##0.00
 		displayFolder: Measures\Value
+		lineageTag: e6fc4ff6-adff-4873-80fd-d1bd25d99086
 
 	/// Number of distinct purchase orders.
 	measure '# Purchase Orders' = DISTINCTCOUNT('Purchase Orders'[Purchase Order ID])
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 3ae5cdcd-7c97-4813-a288-975e8e7556f4
 
 	/// Total quantity ordered from suppliers.
 	measure 'Total Ordered Quantity' = SUM('Purchase Orders'[Ordered Quantity])
 		formatString: #,##0
 		displayFolder: Measures\Quantity
+		lineageTag: 517ed9b3-0854-4332-bcdb-a214b9b825ca
 
 	/// Total quantity received from suppliers.
 	measure 'Total Received Quantity' = SUM('Purchase Orders'[Received Quantity])
 		formatString: #,##0
 		displayFolder: Measures\Quantity
+		lineageTag: e410ab87-e218-423d-b5fd-faf5bdbbaf6d
 
 	/// Received quantity divided by ordered quantity.
 	measure 'Supplier Fill Rate' = DIVIDE([Total Received Quantity], [Total Ordered Quantity])
 		formatString: 0.00%
 		displayFolder: Measures\Rates
+		lineageTag: dc0fcc2f-6f5d-48d1-97ad-5f13e41453b2
 
 	/// Percentage of received lines arriving on or before the expected date.
-	measure 'On-Time Receipt Rate' = ```
+	measure 'On-Time Receipt Rate' =
 			VAR _receivedLines =
 				CALCULATE(
 					COUNTROWS('Purchase Orders'),
@@ -41,15 +47,16 @@ table 'Purchase Orders'
 				)
 			RETURN
 				DIVIDE(_onTimeLines, _receivedLines)
-			```
 		formatString: 0.00%
 		displayFolder: Measures\Rates
+		lineageTag: ee88ca78-7d4e-4102-b7c4-2428aa82dcc7
 
 	/// Stable purchase-order-line identifier.
 	column 'Purchase Order Line ID'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 3dbf93e3-82ae-404b-8811-4ec5e5ecf6b8
 		summarizeBy: none
 		sourceColumn: purchase_order_line_id
 
@@ -57,6 +64,7 @@ table 'Purchase Orders'
 	column 'Purchase Order ID'
 		dataType: string
 		isHidden
+		lineageTag: 5186b3d2-33a0-456b-92a1-2c37e17734b2
 		summarizeBy: none
 		sourceColumn: purchase_order_id
 
@@ -65,6 +73,7 @@ table 'Purchase Orders'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: de77b7f4-cd54-47d1-8573-721cc74bb2a7
 		summarizeBy: none
 		sourceColumn: supplier_key
 
@@ -73,6 +82,7 @@ table 'Purchase Orders'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: ac52a87a-1c61-4c75-a5db-b1ccf2f30d5b
 		summarizeBy: none
 		sourceColumn: supplier_id
 
@@ -81,6 +91,7 @@ table 'Purchase Orders'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 86853c8b-49ca-44d8-b528-4bbef4186ba3
 		summarizeBy: none
 		sourceColumn: product_key
 
@@ -89,6 +100,7 @@ table 'Purchase Orders'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 3ed3cb27-3089-4257-8188-f6ac5b7c4e1a
 		summarizeBy: none
 		sourceColumn: product_id
 
@@ -97,6 +109,7 @@ table 'Purchase Orders'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 44303133-6d72-47a5-a762-b44a77b7e66c
 		summarizeBy: none
 		sourceColumn: facility_key
 
@@ -105,6 +118,7 @@ table 'Purchase Orders'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 65933fd9-01d2-4d96-ae93-866cbb9cffae
 		summarizeBy: none
 		sourceColumn: facility_id
 
@@ -112,6 +126,7 @@ table 'Purchase Orders'
 	column 'Order Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 2f075124-0ec3-4cc7-beab-5fd918d05815
 		summarizeBy: none
 		sourceColumn: order_date
 
@@ -119,6 +134,7 @@ table 'Purchase Orders'
 	column 'Expected Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 37729a8f-5f62-48dc-b032-faba0a71e43c
 		summarizeBy: none
 		sourceColumn: expected_date
 
@@ -126,6 +142,7 @@ table 'Purchase Orders'
 	column 'Received Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 1da4fa61-f97d-4ae7-8616-6a72e1bfd811
 		summarizeBy: none
 		sourceColumn: received_date
 
@@ -133,6 +150,7 @@ table 'Purchase Orders'
 	column 'Ordered Quantity'
 		dataType: int64
 		isHidden
+		lineageTag: 0a534203-34e1-43c3-b02e-5d1e00a9412b
 		summarizeBy: none
 		sourceColumn: ordered_quantity
 
@@ -140,6 +158,7 @@ table 'Purchase Orders'
 	column 'Received Quantity'
 		dataType: int64
 		isHidden
+		lineageTag: e9482540-f852-458d-8597-022dd70392d3
 		summarizeBy: none
 		sourceColumn: received_quantity
 
@@ -147,12 +166,14 @@ table 'Purchase Orders'
 	column 'Unit Cost'
 		dataType: decimal
 		isHidden
+		lineageTag: dca3f668-bdaa-4421-9885-a071466a402b
 		summarizeBy: none
 		sourceColumn: unit_cost
 
 	/// Current receiving status of the line.
 	column 'Purchase Order Status'
 		dataType: string
+		lineageTag: 3a0dcff1-d958-4225-9c02-31734f0166d7
 		summarizeBy: none
 		sourceColumn: purchase_order_status
 
@@ -162,3 +183,4 @@ table 'Purchase Orders'
 			entityName: fact_purchase_order_line
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

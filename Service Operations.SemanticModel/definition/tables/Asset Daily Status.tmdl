@@ -1,41 +1,49 @@
 /// Daily operating condition and availability observations for installed assets.
 table 'Asset Daily Status'
+	lineageTag: 4784dc20-c06b-4714-adeb-72319987f5da
 
 	/// Total asset operating hours.
 	measure 'Operating Hours' = SUM('Asset Daily Status'[Operating Hours Value])
 		formatString: #,##0.0
 		displayFolder: Measures\Duration
+		lineageTag: 558e4959-65a1-4a6b-90c8-323ddb09ee86
 
 	/// Total asset downtime hours.
 	measure 'Downtime Hours' = SUM('Asset Daily Status'[Downtime Hours Value])
 		formatString: #,##0.0
 		displayFolder: Measures\Duration
+		lineageTag: 09365a6a-f43a-4554-9359-f3a21dde060a
 
 	/// Operating hours as a percentage of total observed hours.
 	measure 'Asset Availability' = DIVIDE([Operating Hours], [Operating Hours] + [Downtime Hours])
 		formatString: 0.00%
 		displayFolder: Measures\Rates
+		lineageTag: dac0333d-db52-44b4-b276-1cae5dc8a7a2
 
 	/// Average daily health score across observed assets.
 	measure 'Average Health Score' = AVERAGE('Asset Daily Status'[Health Score])
 		formatString: #,##0.0
 		displayFolder: Measures\Condition
+		lineageTag: ce800b09-06d2-4d1e-bc80-4a0f466f64ce
 
 	/// Average measured asset temperature in degrees Celsius.
 	measure 'Average Temperature Celsius' = AVERAGE('Asset Daily Status'[Temperature Celsius])
 		formatString: #,##0.0
 		displayFolder: Measures\Condition
+		lineageTag: c984f45d-3d79-450d-813b-2ed8030d2f1d
 
 	/// Total operational alerts recorded in daily observations.
 	measure '# Alerts' = SUM('Asset Daily Status'[Alert Count])
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: cc0f1116-bc4f-4ed0-84c9-6209b7d38463
 
 	/// Stable daily-status observation identifier.
 	column 'Asset Daily Status ID'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 8a3d38f3-f1cb-40d7-b579-b04692984f5d
 		summarizeBy: none
 		sourceColumn: asset_daily_status_id
 
@@ -44,6 +52,7 @@ table 'Asset Daily Status'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: d456734d-7796-49d6-810d-363084d04370
 		summarizeBy: none
 		sourceColumn: asset_key
 
@@ -52,6 +61,7 @@ table 'Asset Daily Status'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 875e03c5-6e57-4bdf-9305-711eb55815c7
 		summarizeBy: none
 		sourceColumn: asset_id
 
@@ -59,6 +69,7 @@ table 'Asset Daily Status'
 	column 'Status Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 512bb700-8eae-4946-8070-ef34f8c152d4
 		summarizeBy: none
 		sourceColumn: status_date
 
@@ -66,6 +77,7 @@ table 'Asset Daily Status'
 	column 'Operating Hours Value'
 		dataType: decimal
 		isHidden
+		lineageTag: 8d8165d9-9df2-4cb8-a755-d4d42193ed92
 		summarizeBy: none
 		sourceColumn: operating_hours
 
@@ -73,6 +85,7 @@ table 'Asset Daily Status'
 	column 'Downtime Hours Value'
 		dataType: decimal
 		isHidden
+		lineageTag: 6ea5b684-113f-4867-a4b1-9d939c6742e1
 		summarizeBy: none
 		sourceColumn: downtime_hours
 
@@ -80,6 +93,7 @@ table 'Asset Daily Status'
 	column 'Health Score'
 		dataType: decimal
 		isHidden
+		lineageTag: 9e6f82a6-2e76-417f-a727-21a7148af08b
 		summarizeBy: none
 		sourceColumn: health_score
 
@@ -87,6 +101,7 @@ table 'Asset Daily Status'
 	column 'Temperature Celsius'
 		dataType: decimal
 		isHidden
+		lineageTag: 13d92ed6-a4be-4b81-8630-30052d77aa24
 		summarizeBy: none
 		sourceColumn: temperature_c
 
@@ -94,6 +109,7 @@ table 'Asset Daily Status'
 	column 'Alert Count'
 		dataType: int64
 		isHidden
+		lineageTag: 115a79ef-85d7-4285-9da8-e3c3c025ac45
 		summarizeBy: none
 		sourceColumn: alert_count
 
@@ -103,3 +119,4 @@ table 'Asset Daily Status'
 			entityName: fact_asset_daily_status
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

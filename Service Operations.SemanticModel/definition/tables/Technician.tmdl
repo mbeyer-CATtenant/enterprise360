@@ -1,16 +1,19 @@
 /// Field-service technicians assigned to asset work orders.
 table Technician
+	lineageTag: 2b54c142-6beb-45c3-9eaf-770d02306c3e
 
 	/// Number of technicians currently available for assignment.
 	measure '# Active Technicians' = CALCULATE(COUNTROWS(Technician), KEEPFILTERS(Technician[Status] = "Active"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 52733e2a-fb3f-40b1-a824-a1543a194162
 
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Technician Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: e0d0ef5e-fe54-423a-8c1b-4367424bf798
 		summarizeBy: none
 		sourceColumn: technician_key
 
@@ -18,6 +21,7 @@ table Technician
 	column 'Technician ID'
 		dataType: string
 		isHidden
+		lineageTag: 49b22b22-70e9-48b0-9ab5-4cf691384e78
 		summarizeBy: none
 		sourceColumn: technician_id
 
@@ -26,6 +30,7 @@ table Technician
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 37c8718d-d3b6-47cb-a43b-26644b2fa58d
 		summarizeBy: none
 		sourceColumn: employee_key
 
@@ -34,6 +39,7 @@ table Technician
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 5920465d-40e2-41af-bd6b-2d0080527713
 		summarizeBy: none
 		sourceColumn: employee_id
 
@@ -42,6 +48,7 @@ table Technician
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 7cec5b60-11b2-458d-828c-e6612bac15e6
 		summarizeBy: none
 		sourceColumn: facility_key
 
@@ -50,18 +57,21 @@ table Technician
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: b18bab16-9b75-4916-b0bf-c17cb7d8c64f
 		summarizeBy: none
 		sourceColumn: facility_id
 
 	/// Technician certification level.
 	column 'Skill Level'
 		dataType: string
+		lineageTag: 05d99c20-6ca2-4f2e-a405-cb35e389a2a9
 		summarizeBy: none
 		sourceColumn: skill_level
 
 	/// Primary product or service specialty.
 	column Specialty
 		dataType: string
+		lineageTag: 849e0041-826c-4e3d-81d5-d0c9b33354b8
 		summarizeBy: none
 		sourceColumn: specialty
 
@@ -69,12 +79,14 @@ table Technician
 	column 'Certification Expiry'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: cee0395a-72c2-4583-a64b-68e1a466d1c4
 		summarizeBy: none
 		sourceColumn: certification_expiry
 
 	/// Current technician availability status.
 	column Status
 		dataType: string
+		lineageTag: d205bc6f-052e-4866-9fac-dd10a497f53f
 		summarizeBy: none
 		sourceColumn: status
 
@@ -84,3 +96,4 @@ table Technician
 			entityName: dim_technician
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

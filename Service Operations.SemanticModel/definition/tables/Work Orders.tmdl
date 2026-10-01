@@ -1,50 +1,55 @@
 /// Service activity at one row per asset work order.
 table 'Work Orders'
+	lineageTag: 24828930-aae3-444c-be82-502285d86c21
 
 	/// Number of service work orders.
 	measure '# Work Orders' = COUNTROWS('Work Orders')
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 09ffb110-6859-4d30-b09d-e9ea6ed7051d
 
 	/// Number of work orders that remain open or are waiting for parts.
-	measure '# Open Work Orders' = ```
+	measure '# Open Work Orders' =
 			CALCULATE(
 				COUNTROWS('Work Orders'),
 				KEEPFILTERS(
 					'Work Orders'[Work Order Status] IN { "Open", "Waiting for Parts" }
 				)
 			)
-			```
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 5fae6d6b-787c-45b3-a943-f8edc649bec7
 
 	/// Number of work orders marked completed.
 	measure '# Completed Work Orders' = CALCULATE(COUNTROWS('Work Orders'), KEEPFILTERS('Work Orders'[Work Order Status] = "Completed"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 9d0dc954-446b-4cb1-bbd6-62637afe082e
 
 	/// Total technician labor cost recorded on work orders.
 	measure 'Labor Cost' = SUM('Work Orders'[Labor Cost Value])
 		formatString: $#,##0.00
 		displayFolder: Measures\Value
+		lineageTag: e4fd7e2d-5239-40ad-942a-78929ac23c4a
 
 	/// Total repair and maintenance duration in hours.
 	measure 'Service Duration Hours' = SUM('Work Orders'[Duration Hours])
 		formatString: #,##0.00
 		displayFolder: Measures\Duration
+		lineageTag: b3f2f9bb-4569-4f6a-a6a2-fffabd7fce37
 
 	/// Mean time to repair for completed work orders.
-	measure 'Mean Time to Repair Hours' = ```
+	measure 'Mean Time to Repair Hours' =
 			CALCULATE(
 				AVERAGE('Work Orders'[Duration Hours]),
 				KEEPFILTERS('Work Orders'[Work Order Status] = "Completed")
 			)
-			```
 		formatString: #,##0.00
 		displayFolder: Measures\Duration
+		lineageTag: 641be1e3-2eea-4671-ae6c-2c0e39138382
 
 	/// Percentage of completed work orders resolved within priority-based targets.
-	measure 'Service Level Compliance' = ```
+	measure 'Service Level Compliance' =
 			VAR _completedOrders =
 				FILTER(
 					'Work Orders',
@@ -69,15 +74,16 @@ table 'Work Orders'
 				)
 			RETURN
 				DIVIDE(COUNTROWS(_compliantOrders), COUNTROWS(_completedOrders))
-			```
 		formatString: 0.00%
 		displayFolder: Measures\Rates
+		lineageTag: 90024468-7933-4112-b0ef-8ad0abc4977f
 
 	/// Integer work-order key optimized for Direct Lake joins.
 	column 'Work Order Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 7ad74e3e-d544-41c3-b384-7c26a7fa544d
 		summarizeBy: none
 		sourceColumn: work_order_key
 
@@ -85,6 +91,7 @@ table 'Work Orders'
 	column 'Work Order ID'
 		dataType: string
 		isHidden
+		lineageTag: 11af8498-1fd9-4c6c-a59e-4829140c9870
 		summarizeBy: none
 		sourceColumn: work_order_id
 
@@ -93,6 +100,7 @@ table 'Work Orders'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: a3c1e34b-7dbc-4446-ae2f-392ac04abe3d
 		summarizeBy: none
 		sourceColumn: asset_key
 
@@ -101,6 +109,7 @@ table 'Work Orders'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 93917bf8-7386-47db-9c01-05c41c10a683
 		summarizeBy: none
 		sourceColumn: asset_id
 
@@ -109,6 +118,7 @@ table 'Work Orders'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 830c6ba1-b676-4ea7-ac3b-59b437b3fe79
 		summarizeBy: none
 		sourceColumn: technician_key
 
@@ -117,6 +127,7 @@ table 'Work Orders'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: e5ac23cf-f3a3-4bba-b2b9-2d9d03a93c4d
 		summarizeBy: none
 		sourceColumn: technician_id
 
@@ -124,18 +135,21 @@ table 'Work Orders'
 	column 'Opened Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 4fe09a8e-d96b-4981-9629-02a00cf3ffc8
 		summarizeBy: none
 		sourceColumn: opened_date
 
 	/// Operational priority assigned to the work order.
 	column Priority
 		dataType: string
+		lineageTag: 1fb403ac-7fac-4b6b-9764-c3bc6a66bb97
 		summarizeBy: none
 		sourceColumn: priority
 
 	/// Service category such as preventive or corrective work.
 	column 'Work Order Type'
 		dataType: string
+		lineageTag: a7475543-d354-413b-945b-668580de412a
 		summarizeBy: none
 		sourceColumn: work_order_type
 
@@ -143,6 +157,7 @@ table 'Work Orders'
 	column 'Duration Hours'
 		dataType: decimal
 		isHidden
+		lineageTag: d4b8d1fd-dd21-4121-b959-4e3c12d5473f
 		summarizeBy: none
 		sourceColumn: duration_hours
 
@@ -150,12 +165,14 @@ table 'Work Orders'
 	column 'Resolved Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 92cf4166-bc8b-43c9-b107-42cddb5b9020
 		summarizeBy: none
 		sourceColumn: resolved_date
 
 	/// Current execution status.
 	column 'Work Order Status'
 		dataType: string
+		lineageTag: d26005bc-d162-434a-99d5-35c5c60a8fd0
 		summarizeBy: none
 		sourceColumn: work_order_status
 
@@ -163,6 +180,7 @@ table 'Work Orders'
 	column 'Labor Cost Value'
 		dataType: decimal
 		isHidden
+		lineageTag: a9ff60e7-78a4-4192-a5e3-0f3e78aac3f0
 		summarizeBy: none
 		sourceColumn: labor_cost
 
@@ -172,3 +190,4 @@ table 'Work Orders'
 			entityName: fact_work_order
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

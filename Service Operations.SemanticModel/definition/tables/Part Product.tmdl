@@ -1,11 +1,13 @@
 /// Product role used specifically for replacement parts consumed by work orders.
 table 'Part Product'
+	lineageTag: 89e0cea2-b584-4f52-b14b-4922c631f7a7
 
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Product Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 67eacede-307a-4546-9c78-e084aad1493c
 		summarizeBy: none
 		sourceColumn: product_key
 
@@ -13,30 +15,35 @@ table 'Part Product'
 	column 'Product ID'
 		dataType: string
 		isHidden
+		lineageTag: 23f317a2-81db-4bbc-95c6-12245e71023e
 		summarizeBy: none
 		sourceColumn: product_id
 
 	/// Stock keeping unit used in service-parts processes.
 	column SKU
 		dataType: string
+		lineageTag: 2a22c9dc-6315-484d-af1d-d82fffe4350f
 		summarizeBy: none
 		sourceColumn: sku
 
 	/// Business-facing replacement-product name.
 	column 'Product Name'
 		dataType: string
+		lineageTag: 2d1e5c7d-48c8-46e8-9df7-4df192d65eb6
 		summarizeBy: none
 		sourceColumn: product_name
 
 	/// High-level product classification.
 	column 'Product Category'
 		dataType: string
+		lineageTag: 80bbde7d-0da1-4b18-8667-6630b7e2ca21
 		summarizeBy: none
 		sourceColumn: product_category
 
 	/// Product family used for service-parts analysis.
 	column 'Product Family'
 		dataType: string
+		lineageTag: 24854334-5ba3-4b86-8fcd-5ee8fd3f4502
 		summarizeBy: none
 		sourceColumn: product_family
 
@@ -44,18 +51,21 @@ table 'Part Product'
 	column 'Standard Cost'
 		dataType: decimal
 		formatString: $#,##0.00
+		lineageTag: 1b0251b7-9f3d-4704-a816-028c4e2eb69b
 		summarizeBy: none
 		sourceColumn: standard_cost
 
 	/// Identifies parts that are operationally critical.
 	column 'Critical Spare'
 		dataType: boolean
+		lineageTag: 1da0fb62-2f3b-4925-87ce-977851b82861
 		summarizeBy: none
 		sourceColumn: critical_spare
 
 	/// Current product lifecycle status.
 	column Status
 		dataType: string
+		lineageTag: 59c28365-9625-457c-9392-7d779feb4b5c
 		summarizeBy: none
 		sourceColumn: status
 
@@ -65,3 +75,4 @@ table 'Part Product'
 			entityName: dim_product
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

@@ -1,16 +1,19 @@
 /// Employees who support enterprise commercial and operational processes.
 table Employee
+	lineageTag: 234afdc0-3ab6-4247-abe3-b57b55f76fbc
 
 	/// Number of employees currently marked active.
 	measure '# Active Employees' = CALCULATE(COUNTROWS(Employee), KEEPFILTERS(Employee[Status] = "Active"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 621f9b00-2945-4a8d-9005-2b37aebd20fd
 
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Employee Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 2b183d27-6370-4689-8207-f1ed0c5b5c8c
 		summarizeBy: none
 		sourceColumn: employee_key
 
@@ -18,24 +21,28 @@ table Employee
 	column 'Employee ID'
 		dataType: string
 		isHidden
+		lineageTag: dd49b91b-19e4-4162-b084-a774bc9e2f16
 		summarizeBy: none
 		sourceColumn: employee_id
 
 	/// Employee display name.
 	column 'Employee Name'
 		dataType: string
+		lineageTag: dd1ebe0e-4eec-407d-9508-8cff906046ba
 		summarizeBy: none
 		sourceColumn: employee_name
 
 	/// Organizational department to which the employee belongs.
 	column Department
 		dataType: string
+		lineageTag: 0b322f97-2f22-4802-bb8c-0bb7861df3e9
 		summarizeBy: none
 		sourceColumn: department
 
 	/// Relative organizational seniority.
 	column 'Job Level'
 		dataType: string
+		lineageTag: 51ae3a48-1f78-4cb1-9789-9e8b9619534c
 		summarizeBy: none
 		sourceColumn: job_level
 
@@ -44,6 +51,7 @@ table Employee
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: f5d41efa-708c-4897-9cfe-87c27a2bc68f
 		summarizeBy: none
 		sourceColumn: facility_key
 
@@ -52,6 +60,7 @@ table Employee
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: cf7ca52c-8661-4c4a-a4f6-79eaf26f629f
 		summarizeBy: none
 		sourceColumn: facility_id
 
@@ -59,12 +68,14 @@ table Employee
 	column 'Hire Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 649e1437-72df-427f-bcaa-eb42127dd860
 		summarizeBy: none
 		sourceColumn: hire_date
 
 	/// Current employment status.
 	column Status
 		dataType: string
+		lineageTag: 070b1f9e-a6f3-4b8f-8068-49c8757b5278
 		summarizeBy: none
 		sourceColumn: status
 
@@ -74,3 +85,4 @@ table Employee
 			entityName: dim_employee
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

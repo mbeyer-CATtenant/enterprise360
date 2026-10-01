@@ -1,16 +1,19 @@
 /// Organizations purchasing products and services from the enterprise.
 table Customer
+	lineageTag: a00cc685-4e05-4bff-a021-fc62b18d058b
 
 	/// Number of customers currently marked active.
 	measure '# Active Customers' = CALCULATE(COUNTROWS(Customer), KEEPFILTERS(Customer[Status] = "Active"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 1fa6243b-11a1-44fd-8fa2-74c9f452a467
 
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Customer Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 0d6973d4-37f1-4ff8-905f-a7f8525bdf35
 		summarizeBy: none
 		sourceColumn: customer_key
 
@@ -18,36 +21,42 @@ table Customer
 	column 'Customer ID'
 		dataType: string
 		isHidden
+		lineageTag: dafb7711-8a96-4df1-b066-36084b9dff47
 		summarizeBy: none
 		sourceColumn: customer_id
 
 	/// Customer organization name.
 	column 'Customer Name'
 		dataType: string
+		lineageTag: ce209fd6-4e59-4103-9334-6bdcd4d3c91f
 		summarizeBy: none
 		sourceColumn: customer_name
 
 	/// Commercial segment assigned to the customer.
 	column 'Customer Segment'
 		dataType: string
+		lineageTag: 590e620c-e58e-4956-9098-5aa9e24375b7
 		summarizeBy: none
 		sourceColumn: customer_segment
 
 	/// Primary industry in which the customer operates.
 	column Industry
 		dataType: string
+		lineageTag: 7876be74-1703-4cbe-86ab-b799c2d91f84
 		summarizeBy: none
 		sourceColumn: industry
 
 	/// Enterprise operating region assigned to the customer.
 	column Region
 		dataType: string
+		lineageTag: 9b17e240-bf15-4002-9262-9ecd4729fd14
 		summarizeBy: none
 		sourceColumn: region_code
 
 	/// Two-letter country code for the customer.
 	column Country
 		dataType: string
+		lineageTag: 020f42a4-df7d-417a-a988-185521f9245a
 		dataCategory: Country
 		summarizeBy: none
 		sourceColumn: country_code
@@ -55,6 +64,7 @@ table Customer
 	/// Customer city used for geographic analysis.
 	column City
 		dataType: string
+		lineageTag: cdde48cd-d33b-4221-b2d3-5d99ca1e3c60
 		dataCategory: City
 		summarizeBy: none
 		sourceColumn: city
@@ -63,18 +73,21 @@ table Customer
 	column 'Annual Revenue'
 		dataType: decimal
 		formatString: $#,##0.00
+		lineageTag: ff46f53e-fe5c-4b15-bdd2-60692f3e557b
 		summarizeBy: none
 		sourceColumn: annual_revenue
 
 	/// Current commercial risk classification.
 	column 'Risk Tier'
 		dataType: string
+		lineageTag: 4121317a-ac4d-4c40-b095-a62c878d083f
 		summarizeBy: none
 		sourceColumn: risk_tier
 
 	/// Current customer lifecycle status.
 	column Status
 		dataType: string
+		lineageTag: 41530de4-0771-496d-936b-796a0abcff95
 		summarizeBy: none
 		sourceColumn: status
 
@@ -82,6 +95,7 @@ table Customer
 	column 'Created On'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 4d131efe-74c8-4b3b-bd21-4547ec6ec89a
 		summarizeBy: none
 		sourceColumn: created_on
 
@@ -89,6 +103,7 @@ table Customer
 	column 'Modified On'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: c9cc9def-62e8-4c6d-9ecc-2a4487d6f418
 		summarizeBy: none
 		sourceColumn: modified_on
 
@@ -98,3 +113,4 @@ table Customer
 			entityName: dim_customer
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

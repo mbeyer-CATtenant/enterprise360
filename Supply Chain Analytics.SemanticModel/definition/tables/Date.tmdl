@@ -1,5 +1,6 @@
 /// Shared calendar used for commercial time intelligence.
 table Date
+	lineageTag: 141ab6f4-6107-4c35-8ceb-692f404ea75b
 	dataCategory: Time
 
 	/// Integer calendar key in YYYYMMDD form.
@@ -7,6 +8,7 @@ table Date
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 5d04aae3-2979-4351-95c6-e9f0105388f0
 		summarizeBy: none
 		sourceColumn: date_key
 
@@ -14,6 +16,7 @@ table Date
 	column Date
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 24f78b8d-675b-4ebb-b1cb-9e63b6cdacf9
 		summarizeBy: none
 		sourceColumn: full_date
 
@@ -21,6 +24,7 @@ table Date
 	column Year
 		dataType: int64
 		formatString: 0
+		lineageTag: 4c02b28b-b38a-41a9-a67a-eb80f3fb56bf
 		summarizeBy: none
 		sourceColumn: calendar_year
 
@@ -28,6 +32,7 @@ table Date
 	column Quarter
 		dataType: int64
 		formatString: 0
+		lineageTag: fe8a6387-3601-451f-bda0-45a5b6afc027
 		summarizeBy: none
 		sourceColumn: calendar_quarter
 
@@ -36,12 +41,14 @@ table Date
 		dataType: int64
 		isHidden
 		formatString: 0
+		lineageTag: 85efdc1b-c404-4c20-938f-b1e8e9379cc9
 		summarizeBy: none
 		sourceColumn: calendar_month
 
 	/// Full calendar month name.
 	column Month
 		dataType: string
+		lineageTag: d64e370e-d376-421d-90ed-ee84a614d409
 		summarizeBy: none
 		sourceColumn: month_name
 		sortByColumn: 'Month Number'
@@ -50,33 +57,41 @@ table Date
 	column 'Week of Year'
 		dataType: int64
 		formatString: 0
+		lineageTag: 6bcb3df0-1583-4425-9f29-585d42c366a8
 		summarizeBy: none
 		sourceColumn: week_of_year
 
 	/// Day name for weekday analysis.
 	column 'Day of Week'
 		dataType: string
+		lineageTag: cc34d313-b703-4414-b00a-043245d8465d
 		summarizeBy: none
 		sourceColumn: day_of_week
 
 	/// Identifies Saturday and Sunday dates.
 	column 'Is Weekend'
 		dataType: boolean
+		lineageTag: 7303303a-b647-4bf5-abea-f745aff66be3
 		summarizeBy: none
 		sourceColumn: is_weekend
 
 	hierarchy 'Calendar Hierarchy'
+		lineageTag: c4037774-4b38-4462-8049-415cdb412336
 
 		level Year
+			lineageTag: 52dede41-1eeb-4b71-aa90-7d3073a9f367
 			column: Year
 
 		level Quarter
+			lineageTag: 55de3b26-b6fa-4b18-893b-ee63969c0771
 			column: Quarter
 
 		level Month
+			lineageTag: d16fec60-7c3f-4ae4-856a-5c1ba9922d8c
 			column: Month
 
 		level Date
+			lineageTag: f47d646a-d2d0-46ac-a84f-a427961705f2
 			column: Date
 
 	partition Date = entity
@@ -85,3 +100,4 @@ table Date
 			entityName: dim_date
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

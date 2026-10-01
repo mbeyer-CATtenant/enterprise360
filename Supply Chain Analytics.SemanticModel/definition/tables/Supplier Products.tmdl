@@ -1,21 +1,25 @@
 /// Approved supplier-to-product assignments used for sourcing analysis.
 table 'Supplier Products'
+	lineageTag: 4c199427-eb97-49f3-88d0-d4eba9be72d2
 
 	/// Number of supplier-product sourcing assignments.
 	measure '# Supplier Product Assignments' = COUNTROWS('Supplier Products')
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 29099f8a-984a-496c-8c41-a2dd8b0591c5
 
 	/// Number of assignments marked as preferred.
 	measure '# Preferred Assignments' = CALCULATE(COUNTROWS('Supplier Products'), KEEPFILTERS('Supplier Products'[Preferred Supplier] = TRUE()))
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 7b083263-4711-45e8-a42f-3af579b85504
 
 	/// Stable supplier-product assignment identifier.
 	column 'Supplier Product ID'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 94036fb2-a9be-4a09-a389-605b86c949dc
 		summarizeBy: none
 		sourceColumn: supplier_product_id
 
@@ -24,6 +28,7 @@ table 'Supplier Products'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: b7f7a0f0-3d9b-4cca-b8ce-ed4fa674f304
 		summarizeBy: none
 		sourceColumn: product_key
 
@@ -32,6 +37,7 @@ table 'Supplier Products'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: cfe450fd-e4c8-437c-a5c8-349a0d7fa88b
 		summarizeBy: none
 		sourceColumn: product_id
 
@@ -40,6 +46,7 @@ table 'Supplier Products'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 39f095e8-c176-4791-b055-22aab723568c
 		summarizeBy: none
 		sourceColumn: supplier_key
 
@@ -48,12 +55,14 @@ table 'Supplier Products'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 0bd438d9-3d9e-490a-9e2e-aa9dc69e5a06
 		summarizeBy: none
 		sourceColumn: supplier_id
 
 	/// Supplier-specific product identifier.
 	column 'Supplier Part Number'
 		dataType: string
+		lineageTag: 4bdfff8b-a390-4347-8811-23befeb1ee22
 		summarizeBy: none
 		sourceColumn: supplier_part_number
 
@@ -61,12 +70,14 @@ table 'Supplier Products'
 	column 'Minimum Order Quantity'
 		dataType: int64
 		formatString: #,##0
+		lineageTag: c7ea01de-255b-48b8-8b5f-83ab533538f1
 		summarizeBy: none
 		sourceColumn: minimum_order_quantity
 
 	/// Identifies the preferred supplier assignment for a product.
 	column 'Preferred Supplier'
 		dataType: boolean
+		lineageTag: ee269852-8d9b-44c9-96b6-b22ea1d9a284
 		summarizeBy: none
 		sourceColumn: preferred_supplier
 
@@ -76,3 +87,4 @@ table 'Supplier Products'
 			entityName: bridge_supplier_product
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

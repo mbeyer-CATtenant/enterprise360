@@ -1,28 +1,33 @@
 /// Commercial order headers at one row per sales order.
 table Orders
+	lineageTag: 70b651d4-3266-4a25-a2f5-a58322d902f3
 
 	/// Number of sales orders in the current filter context.
 	measure '# Orders' = COUNTROWS(Orders)
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 3a4c91ac-c8dd-45d9-bfb9-554463a54e0d
 
 	/// Number of sales orders that remain open.
 	measure '# Open Orders' = CALCULATE(COUNTROWS(Orders), KEEPFILTERS(Orders[Order Status] = "Open"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 256580b8-4d79-4db6-a025-c4af8e135d4e
 
 	/// Number of completed sales orders.
 	measure '# Completed Orders' = CALCULATE(COUNTROWS(Orders), KEEPFILTERS(Orders[Order Status] = "Completed"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 9abd9ea6-41a9-405b-950c-00a70f981df0
 
 	/// Average revenue value of an order before cancellation adjustments.
 	measure 'Average Order Value' = AVERAGE(Orders[Order Revenue])
 		formatString: $#,##0.00
 		displayFolder: Measures\Value
+		lineageTag: 542b1fc4-eb56-4018-bf8d-bdf466ee9cff
 
 	/// Percentage of orders with a cancelled status.
-	measure 'Cancellation Rate' = ```
+	measure 'Cancellation Rate' =
 			VAR _cancelledOrders =
 				CALCULATE(
 					COUNTROWS(Orders),
@@ -30,15 +35,16 @@ table Orders
 				)
 			RETURN
 				DIVIDE(_cancelledOrders, [# Orders])
-			```
 		formatString: 0.00%
 		displayFolder: Measures\Rates
+		lineageTag: 949bcdda-bf2a-4200-8b2f-e2b3a7a12b23
 
 	/// Integer order key optimized for Direct Lake joins.
 	column 'Sales Order Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 4d0d07d9-3142-47aa-a839-a78e198f749f
 		summarizeBy: none
 		sourceColumn: sales_order_key
 
@@ -46,6 +52,7 @@ table Orders
 	column 'Sales Order ID'
 		dataType: string
 		isHidden
+		lineageTag: 7ff5f782-60a3-48c6-820b-e30424c03259
 		summarizeBy: none
 		sourceColumn: sales_order_id
 
@@ -54,6 +61,7 @@ table Orders
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 99083de7-ffc2-4201-9cf9-dca3e716e471
 		summarizeBy: none
 		sourceColumn: customer_key
 
@@ -62,6 +70,7 @@ table Orders
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: cf1dcf37-8ba5-42f7-b455-7c2e3735fbdc
 		summarizeBy: none
 		sourceColumn: customer_id
 
@@ -70,6 +79,7 @@ table Orders
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 90d4d1b8-be88-4eb2-a076-9e0deb8ec0e0
 		summarizeBy: none
 		sourceColumn: sales_channel_key
 
@@ -78,6 +88,7 @@ table Orders
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: d9b21958-9a05-4209-96de-9e309ae095eb
 		summarizeBy: none
 		sourceColumn: sales_channel_id
 
@@ -85,6 +96,7 @@ table Orders
 	column 'Order Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: dbda3818-d4a2-4453-9726-2186393917e2
 		summarizeBy: none
 		sourceColumn: order_date
 
@@ -92,18 +104,21 @@ table Orders
 	column 'Requested Date'
 		dataType: dateTime
 		formatString: Short Date
+		lineageTag: 401e1b1d-e5cc-47b1-a127-b1514d5193a2
 		summarizeBy: none
 		sourceColumn: requested_date
 
 	/// Transaction currency used by the synthetic dataset.
 	column 'Currency Code'
 		dataType: string
+		lineageTag: 4972e319-7712-48e2-865d-a14f32c5e675
 		summarizeBy: none
 		sourceColumn: currency_code
 
 	/// Current commercial fulfillment status.
 	column 'Order Status'
 		dataType: string
+		lineageTag: 983dd73e-9244-4bb2-86f1-78dac31a06d2
 		summarizeBy: none
 		sourceColumn: order_status
 
@@ -111,6 +126,7 @@ table Orders
 	column 'Order Revenue'
 		dataType: decimal
 		isHidden
+		lineageTag: 3a07360a-7b99-4704-9726-5a7dfa592eb5
 		summarizeBy: none
 		sourceColumn: order_revenue
 
@@ -118,6 +134,7 @@ table Orders
 	column 'Order Cost'
 		dataType: decimal
 		isHidden
+		lineageTag: f16a476e-1e59-4fa7-9a92-ec324ecbfdeb
 		summarizeBy: none
 		sourceColumn: order_cost
 
@@ -125,6 +142,7 @@ table Orders
 	column 'Gross Margin Value'
 		dataType: decimal
 		isHidden
+		lineageTag: db91da27-a840-4889-b689-7ab510e763a6
 		summarizeBy: none
 		sourceColumn: gross_margin
 
@@ -134,3 +152,4 @@ table Orders
 			entityName: fact_sales_order
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

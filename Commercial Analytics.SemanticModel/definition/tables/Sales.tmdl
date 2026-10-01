@@ -1,61 +1,73 @@
 /// Commercial sales detail at one row per sales-order line.
 table Sales
+	lineageTag: 523df909-c7ae-4818-863b-c5e5b14e7df8
 
 	/// Revenue after line-level discounts.
 	measure 'Total Revenue' = SUM(Sales[Line Revenue])
 		formatString: $#,##0.00
 		displayFolder: Measures\Value
+		lineageTag: 522e58d3-a7d2-4b00-aa58-32e02a9ac945
 
 	/// Standard cost extended by sales quantity.
 	measure 'Total Cost' = SUM(Sales[Line Cost])
 		formatString: $#,##0.00
 		displayFolder: Measures\Value
+		lineageTag: d8f23945-411d-4cff-9d22-2a785c867bd8
 
 	/// Revenue remaining after standard product cost.
 	measure 'Gross Margin' = [Total Revenue] - [Total Cost]
 		formatString: $#,##0.00
 		displayFolder: Measures\Value
+		lineageTag: f77ad690-0e22-4e27-8826-d75f717e8c71
 
 	/// Gross margin as a percentage of revenue.
 	measure 'Gross Margin (%)' = DIVIDE([Gross Margin], [Total Revenue])
 		formatString: 0.00%
 		displayFolder: Measures\Rates
+		lineageTag: 3662acb8-2cc0-467d-9fab-9a4d824bc8fd
 
 	/// Total product units sold.
 	measure 'Units Sold' = SUM(Sales[Quantity])
 		formatString: #,##0
 		displayFolder: Measures\Quantity
+		lineageTag: 1220490e-0a8c-403a-a108-2831713dbc30
 
 	/// Number of order-line records.
 	measure '# Sales Lines' = COUNTROWS(Sales)
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: 07915bbf-cfb5-42a7-a84f-6924fc0cac96
 
 	/// Number of distinct orders represented in sales detail.
 	measure '# Orders with Sales' = DISTINCTCOUNT(Sales[Sales Order ID])
 		formatString: #,##0
 		displayFolder: Measures\Counts
+		lineageTag: c5fa7b4e-a7a4-403d-a068-ee4b47ceecf0
 
 	/// Realized revenue per unit sold.
 	measure 'Average Selling Price' = DIVIDE([Total Revenue], [Units Sold])
 		formatString: $#,##0.00
 		displayFolder: Measures\Value
+		lineageTag: 82ed5844-f8b0-4b54-b8f9-f3a3ff2b0663
 
 	/// Revenue accumulated from the beginning of the calendar year.
 	measure 'Total Revenue (ytd)' = TOTALYTD([Total Revenue], Date[Date])
 		formatString: $#,##0.00
 		displayFolder: Measures\Time Intelligence
+		lineageTag: 1fa27668-c524-4de4-93e5-05b55049da06
 
 	/// Revenue for the comparable prior-year period.
 	measure 'Total Revenue (ly)' = CALCULATE([Total Revenue], SAMEPERIODLASTYEAR(Date[Date]))
 		formatString: $#,##0.00
 		displayFolder: Measures\Time Intelligence
+		lineageTag: e6122682-d755-4212-aba4-86844121c924
 
 	/// Stable order-line identifier.
 	column 'Sales Order Line ID'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: ff3b7df1-277f-4c94-b5b4-396fa66d3844
 		summarizeBy: none
 		sourceColumn: sales_order_line_id
 
@@ -64,6 +76,7 @@ table Sales
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 63b1ac93-9f94-4d62-9dd2-da369ec9bd67
 		summarizeBy: none
 		sourceColumn: sales_order_key
 
@@ -71,6 +84,7 @@ table Sales
 	column 'Sales Order ID'
 		dataType: string
 		isHidden
+		lineageTag: bd8143c8-047f-45c1-90af-ba9d9e9e3a50
 		summarizeBy: none
 		sourceColumn: sales_order_id
 
@@ -79,6 +93,7 @@ table Sales
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: ef644807-0834-4473-a31c-7a3626e2cf9b
 		summarizeBy: none
 		sourceColumn: product_key
 
@@ -87,6 +102,7 @@ table Sales
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
+		lineageTag: 66e82161-32b5-43a9-8cfe-e99fe43cdb22
 		summarizeBy: none
 		sourceColumn: product_id
 
@@ -94,6 +110,7 @@ table Sales
 	column Quantity
 		dataType: int64
 		isHidden
+		lineageTag: 02295331-64a8-49f7-93f2-0a57a4b6f18b
 		summarizeBy: none
 		sourceColumn: quantity
 
@@ -101,6 +118,7 @@ table Sales
 	column 'Unit Price'
 		dataType: decimal
 		formatString: $#,##0.00
+		lineageTag: 9e9aa5b4-13ba-4924-9373-1645f59ce7b6
 		summarizeBy: none
 		sourceColumn: unit_price
 
@@ -108,6 +126,7 @@ table Sales
 	column 'Discount Percent'
 		dataType: decimal
 		formatString: 0.00%
+		lineageTag: 12d8a876-0def-4228-9e06-7286c8852c4e
 		summarizeBy: none
 		sourceColumn: discount_percent
 
@@ -115,6 +134,7 @@ table Sales
 	column 'Line Revenue'
 		dataType: decimal
 		isHidden
+		lineageTag: ce95374c-800e-4cf5-b854-30127aba957b
 		summarizeBy: none
 		sourceColumn: line_revenue
 
@@ -122,6 +142,7 @@ table Sales
 	column 'Line Cost'
 		dataType: decimal
 		isHidden
+		lineageTag: 7a12b104-ab5c-44f0-a07a-cbda82ea7230
 		summarizeBy: none
 		sourceColumn: line_cost
 
@@ -131,3 +152,4 @@ table Sales
 			entityName: fact_sales_order_line
 			schemaName: gold
 			expressionSource: DirectLakeSource
+

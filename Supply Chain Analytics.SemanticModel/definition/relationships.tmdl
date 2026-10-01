@@ -1,54 +1,44 @@
 relationship 'Purchase Orders to Date'
 	fromColumn: 'Purchase Orders'.'Order Date'
 	toColumn: Date.Date
-	crossFilteringBehavior: oneDirection
 
 relationship 'Purchase Orders to Supplier'
 	fromColumn: 'Purchase Orders'.'Supplier Key'
 	toColumn: Supplier.'Supplier Key'
-	crossFilteringBehavior: oneDirection
 
 relationship 'Purchase Orders to Product'
 	fromColumn: 'Purchase Orders'.'Product Key'
 	toColumn: Product.'Product Key'
-	crossFilteringBehavior: oneDirection
 
 relationship 'Purchase Orders to Facility'
 	fromColumn: 'Purchase Orders'.'Facility Key'
 	toColumn: Facility.'Facility Key'
-	crossFilteringBehavior: oneDirection
 
 relationship 'Shipments to Date'
 	fromColumn: Shipments.'Ship Date'
 	toColumn: Date.Date
-	crossFilteringBehavior: oneDirection
 
 relationship 'Shipments to Facility'
 	fromColumn: Shipments.'Facility Key'
 	toColumn: Facility.'Facility Key'
-	crossFilteringBehavior: oneDirection
 
 relationship 'Inventory to Date'
 	fromColumn: Inventory.'Snapshot Date'
 	toColumn: Date.Date
-	crossFilteringBehavior: oneDirection
 
 relationship 'Inventory to Product'
 	fromColumn: Inventory.'Product Key'
 	toColumn: Product.'Product Key'
-	crossFilteringBehavior: oneDirection
 
 relationship 'Inventory to Facility'
 	fromColumn: Inventory.'Facility Key'
 	toColumn: Facility.'Facility Key'
-	crossFilteringBehavior: oneDirection
 
 relationship 'Supplier Products to Supplier'
 	fromColumn: 'Supplier Products'.'Supplier Key'
 	toColumn: Supplier.'Supplier Key'
-	crossFilteringBehavior: oneDirection
 
 relationship 'Supplier Products to Product'
 	fromColumn: 'Supplier Products'.'Product Key'
 	toColumn: Product.'Product Key'
-	crossFilteringBehavior: oneDirection
+

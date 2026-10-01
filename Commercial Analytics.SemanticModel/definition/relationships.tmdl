@@ -1,24 +1,20 @@
 relationship 'Orders to Customer'
 	fromColumn: Orders.'Customer Key'
 	toColumn: Customer.'Customer Key'
-	crossFilteringBehavior: oneDirection
 
 relationship 'Orders to Sales Channel'
 	fromColumn: Orders.'Sales Channel Key'
 	toColumn: 'Sales Channel'.'Sales Channel Key'
-	crossFilteringBehavior: oneDirection
 
 relationship 'Orders to Date'
 	fromColumn: Orders.'Order Date'
 	toColumn: Date.Date
-	crossFilteringBehavior: oneDirection
 
 relationship 'Sales to Orders'
 	fromColumn: Sales.'Sales Order Key'
 	toColumn: Orders.'Sales Order Key'
-	crossFilteringBehavior: oneDirection
 
 relationship 'Sales to Product'
 	fromColumn: Sales.'Product Key'
 	toColumn: Product.'Product Key'
-	crossFilteringBehavior: oneDirection
+
