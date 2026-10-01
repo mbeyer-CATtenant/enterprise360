@@ -1,0 +1,78 @@
+/// Approved supplier-to-product assignments used for sourcing analysis.
+table 'Supplier Products'
+
+	/// Number of supplier-product sourcing assignments.
+	measure '# Supplier Product Assignments' = COUNTROWS('Supplier Products')
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Number of assignments marked as preferred.
+	measure '# Preferred Assignments' = CALCULATE(COUNTROWS('Supplier Products'), KEEPFILTERS('Supplier Products'[Preferred Supplier] = TRUE()))
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Stable supplier-product assignment identifier.
+	column 'Supplier Product ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: supplier_product_id
+
+	/// Integer product relationship key.
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: product_key
+
+	/// Product relationship key.
+	column 'Product ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: product_id
+
+	/// Integer supplier relationship key.
+	column 'Supplier Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: supplier_key
+
+	/// Supplier relationship key.
+	column 'Supplier ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: supplier_id
+
+	/// Supplier-specific product identifier.
+	column 'Supplier Part Number'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: supplier_part_number
+
+	/// Minimum quantity accepted per supplier order.
+	column 'Minimum Order Quantity'
+		dataType: int64
+		formatString: #,##0
+		summarizeBy: none
+		sourceColumn: minimum_order_quantity
+
+	/// Identifies the preferred supplier assignment for a product.
+	column 'Preferred Supplier'
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: preferred_supplier
+
+	partition 'Supplier Products' = entity
+		mode: directLake
+		source
+			entityName: bridge_supplier_product
+			schemaName: gold
+			expressionSource: DirectLakeSource

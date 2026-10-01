@@ -1,0 +1,87 @@
+/// Shared calendar used for commercial time intelligence.
+table Date
+	dataCategory: Time
+
+	/// Integer calendar key in YYYYMMDD form.
+	column 'Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: date_key
+
+	/// Calendar date used to filter commercial transactions.
+	column Date
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: full_date
+
+	/// Calendar year.
+	column Year
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: calendar_year
+
+	/// Calendar quarter number.
+	column Quarter
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: calendar_quarter
+
+	/// Calendar month number used to sort month names.
+	column 'Month Number'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: calendar_month
+
+	/// Full calendar month name.
+	column Month
+		dataType: string
+		summarizeBy: none
+		sourceColumn: month_name
+		sortByColumn: 'Month Number'
+
+	/// ISO-style week number within the year.
+	column 'Week of Year'
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: week_of_year
+
+	/// Day name for weekday analysis.
+	column 'Day of Week'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: day_of_week
+
+	/// Identifies Saturday and Sunday dates.
+	column 'Is Weekend'
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: is_weekend
+
+	hierarchy 'Calendar Hierarchy'
+
+		level Year
+			column: Year
+
+		level Quarter
+			column: Quarter
+
+		level Month
+			column: Month
+
+		level Date
+			column: Date
+
+	partition Date = entity
+		mode: directLake
+		source
+			entityName: dim_date
+			schemaName: gold
+			expressionSource: DirectLakeSource

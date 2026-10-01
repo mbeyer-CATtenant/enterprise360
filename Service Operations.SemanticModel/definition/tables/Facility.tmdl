@@ -1,0 +1,69 @@
+/// Plants, distribution centers, and service hubs operated by the enterprise.
+table Facility
+
+	/// Integer relationship key optimized for Direct Lake joins.
+	column 'Facility Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: facility_key
+
+	/// Stable facility identifier used by operational relationships.
+	column 'Facility ID'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: facility_id
+
+	/// Business-facing facility name.
+	column 'Facility Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: facility_name
+
+	/// Operational purpose of the facility.
+	column 'Facility Type'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: facility_type
+
+	/// Enterprise operating region assigned to the facility.
+	column Region
+		dataType: string
+		summarizeBy: none
+		sourceColumn: region_code
+
+	/// Two-letter facility country code.
+	column Country
+		dataType: string
+		dataCategory: Country
+		summarizeBy: none
+		sourceColumn: country_code
+
+	/// Facility city used for geographic analysis.
+	column City
+		dataType: string
+		dataCategory: City
+		summarizeBy: none
+		sourceColumn: city
+
+	/// Synthetic operating capacity of the facility.
+	column 'Capacity Units'
+		dataType: int64
+		formatString: #,##0
+		summarizeBy: none
+		sourceColumn: capacity_units
+
+	/// Current facility lifecycle status.
+	column Status
+		dataType: string
+		summarizeBy: none
+		sourceColumn: status
+
+	partition Facility = entity
+		mode: directLake
+		source
+			entityName: dim_facility
+			schemaName: gold
+			expressionSource: DirectLakeSource

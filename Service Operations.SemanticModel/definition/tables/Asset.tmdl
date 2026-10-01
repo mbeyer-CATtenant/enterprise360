@@ -1,0 +1,139 @@
+/// Installed equipment and vehicles owned by customers and serviced by the enterprise.
+table Asset
+
+	/// Number of installed customer assets.
+	measure '# Assets' = COUNTROWS(Asset)
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Number of assets classified as operationally critical.
+	measure '# Critical Assets' = CALCULATE(COUNTROWS(Asset), KEEPFILTERS(Asset[Criticality] = "Critical"))
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Number of assets currently out of service.
+	measure '# Assets Out of Service' = CALCULATE(COUNTROWS(Asset), KEEPFILTERS(Asset[Status] = "Out of Service"))
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Integer relationship key optimized for Direct Lake joins.
+	column 'Asset Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: asset_key
+
+	/// Stable installed-asset identifier.
+	column 'Asset ID'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: asset_id
+
+	/// Manufacturer serial number for an installed asset.
+	column 'Serial Number'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: serial_number
+
+	/// Integer customer relationship key.
+	column 'Customer Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: customer_key
+
+	/// Customer relationship key.
+	column 'Customer ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: customer_id
+
+	/// Integer installed-product relationship key.
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: product_key
+
+	/// Installed-product relationship key.
+	column 'Product ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: product_id
+
+	/// Integer servicing-facility relationship key.
+	column 'Facility Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: facility_key
+
+	/// Servicing-facility relationship key.
+	column 'Facility ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: facility_id
+
+	/// Asset specialization used by ontology inheritance.
+	column 'Asset Type'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: asset_type
+
+	/// Date on which the asset entered service.
+	column 'Install Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: install_date
+
+	/// Date on which the standard warranty expires.
+	column 'Warranty Expiry'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: warranty_expiry
+
+	/// Operational impact classification.
+	column Criticality
+		dataType: string
+		summarizeBy: none
+		sourceColumn: criticality
+
+	/// Current operational status.
+	column Status
+		dataType: string
+		summarizeBy: none
+		sourceColumn: status
+
+	/// Date on which the asset record was created.
+	column 'Created On'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: created_on
+
+	/// Date on which the asset record was last modified.
+	column 'Modified On'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: modified_on
+
+	partition Asset = entity
+		mode: directLake
+		source
+			entityName: dim_asset
+			schemaName: gold
+			expressionSource: DirectLakeSource

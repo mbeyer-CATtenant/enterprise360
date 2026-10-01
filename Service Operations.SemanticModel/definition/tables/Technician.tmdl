@@ -1,0 +1,86 @@
+/// Field-service technicians assigned to asset work orders.
+table Technician
+
+	/// Number of technicians currently available for assignment.
+	measure '# Active Technicians' = CALCULATE(COUNTROWS(Technician), KEEPFILTERS(Technician[Status] = "Active"))
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Integer relationship key optimized for Direct Lake joins.
+	column 'Technician Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: technician_key
+
+	/// Stable technician identifier used by work-order relationships.
+	column 'Technician ID'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: technician_id
+
+	/// Integer employee relationship key.
+	column 'Employee Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: employee_key
+
+	/// Employee relationship key.
+	column 'Employee ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: employee_id
+
+	/// Integer facility key retained for technician assignment analysis.
+	column 'Facility Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: facility_key
+
+	/// Home facility retained without an active relationship to avoid ambiguous service paths.
+	column 'Facility ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: facility_id
+
+	/// Technician certification level.
+	column 'Skill Level'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: skill_level
+
+	/// Primary product or service specialty.
+	column Specialty
+		dataType: string
+		summarizeBy: none
+		sourceColumn: specialty
+
+	/// Date on which the technician certification expires.
+	column 'Certification Expiry'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: certification_expiry
+
+	/// Current technician availability status.
+	column Status
+		dataType: string
+		summarizeBy: none
+		sourceColumn: status
+
+	partition Technician = entity
+		mode: directLake
+		source
+			entityName: dim_technician
+			schemaName: gold
+			expressionSource: DirectLakeSource

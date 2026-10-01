@@ -1,0 +1,120 @@
+/// Inventory position snapshots by product, facility, and date.
+table Inventory
+
+	/// Total physical units recorded on hand.
+	measure 'Quantity on Hand' = SUM(Inventory[Quantity on Hand Value])
+		formatString: #,##0
+		displayFolder: Measures\Quantity
+
+	/// Total inventory units allocated to demand.
+	measure 'Allocated Quantity' = SUM(Inventory[Allocated Quantity Value])
+		formatString: #,##0
+		displayFolder: Measures\Quantity
+
+	/// Inventory units remaining after current allocations.
+	measure 'Available Quantity' = [Quantity on Hand] - [Allocated Quantity]
+		formatString: #,##0
+		displayFolder: Measures\Quantity
+
+	/// Standard-cost value of inventory on hand.
+	measure 'Inventory Value' = SUMX(Inventory, Inventory[Quantity on Hand Value] * RELATED(Product[Standard Cost]))
+		formatString: $#,##0.00
+		displayFolder: Measures\Value
+
+	/// Number of product-facility snapshots below safety stock.
+	measure '# Stockout Snapshots' = CALCULATE(COUNTROWS(Inventory), KEEPFILTERS(Inventory[Stockout Flag] = TRUE()))
+		formatString: #,##0
+		displayFolder: Measures\Counts
+
+	/// Percentage of inventory snapshots below safety stock.
+	measure 'Stockout Rate' = DIVIDE([# Stockout Snapshots], COUNTROWS(Inventory))
+		formatString: 0.00%
+		displayFolder: Measures\Rates
+
+	/// Stable inventory-snapshot identifier.
+	column 'Inventory Snapshot ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: inventory_snapshot_id
+
+	/// Date on which the inventory position was measured.
+	column 'Snapshot Date'
+		dataType: dateTime
+		formatString: Short Date
+		summarizeBy: none
+		sourceColumn: snapshot_date
+
+	/// Integer facility relationship key.
+	column 'Facility Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: facility_key
+
+	/// Facility relationship key.
+	column 'Facility ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: facility_id
+
+	/// Integer product relationship key.
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: product_key
+
+	/// Product relationship key.
+	column 'Product ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		summarizeBy: none
+		sourceColumn: product_id
+
+	/// Physical quantity on hand used by explicit measures.
+	column 'Quantity on Hand Value'
+		dataType: int64
+		isHidden
+		summarizeBy: none
+		sourceColumn: quantity_on_hand
+
+	/// Quantity allocated to demand used by explicit measures.
+	column 'Allocated Quantity Value'
+		dataType: int64
+		isHidden
+		summarizeBy: none
+		sourceColumn: quantity_allocated
+
+	/// Minimum desired inventory level.
+	column 'Safety Stock Quantity'
+		dataType: int64
+		formatString: #,##0
+		summarizeBy: none
+		sourceColumn: safety_stock_quantity
+
+	/// Inventory level at which replenishment should begin.
+	column 'Reorder Point'
+		dataType: int64
+		formatString: #,##0
+		summarizeBy: none
+		sourceColumn: reorder_point
+
+	/// Identifies a snapshot below its safety-stock level.
+	column 'Stockout Flag'
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: stockout_flag
+
+	partition Inventory = entity
+		mode: directLake
+		source
+			entityName: fact_inventory_snapshot
+			schemaName: gold
+			expressionSource: DirectLakeSource
