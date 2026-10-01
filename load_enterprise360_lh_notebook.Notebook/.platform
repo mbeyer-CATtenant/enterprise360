@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "load_enterprise360_lh_notebook",
+    "description": "Generates correlated commercial, supply-chain, workforce, asset, and service data, then populates 18 Bronze, Silver, and Gold Delta tables plus a load audit. Default scale is small; change the parameter cell to medium or large"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "001a39fd-0c39-8e18-4dbe-d78a0295824f"
+  }
+}
