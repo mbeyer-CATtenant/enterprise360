@@ -12,17 +12,17 @@ table 'Purchase Orders'
 		displayFolder: Measures\Counts
 
 	/// Total quantity ordered from suppliers.
-	measure 'Ordered Quantity' = SUM('Purchase Orders'[Ordered Quantity])
+	measure 'Total Ordered Quantity' = SUM('Purchase Orders'[Ordered Quantity])
 		formatString: #,##0
 		displayFolder: Measures\Quantity
 
 	/// Total quantity received from suppliers.
-	measure 'Received Quantity' = SUM('Purchase Orders'[Received Quantity])
+	measure 'Total Received Quantity' = SUM('Purchase Orders'[Received Quantity])
 		formatString: #,##0
 		displayFolder: Measures\Quantity
 
 	/// Received quantity divided by ordered quantity.
-	measure 'Supplier Fill Rate' = DIVIDE([Received Quantity], [Ordered Quantity])
+	measure 'Supplier Fill Rate' = DIVIDE([Total Received Quantity], [Total Ordered Quantity])
 		formatString: 0.00%
 		displayFolder: Measures\Rates
 
