@@ -38,10 +38,15 @@
 # Fabric pipeline parameters. Mark this cell as the parameter cell after import.
 SCALE = "small"  # small, medium, or large
 SEED = 20261001
-START_DATE = "2013-01-01"
-END_DATE = "2050-12-31"
 WRITE_MODE = "overwrite"
 OPTIMIZE_GOLD = True
+
+from datetime import date, timedelta
+today = date.today()
+five_years_ago = date(today.year - 5, today.month, today.day)
+
+START_DATE = five_years_ago.isoformat()          # e.g. "2019-10-02"
+END_DATE = today.isoformat()       
 
 
 # METADATA ********************
@@ -175,7 +180,7 @@ print(
 
 # MARKDOWN ********************
 
-# ## 2a. Deterministic generation helpers
+# ## 2. Deterministic generation helpers
 
 
 # CELL ********************
@@ -265,6 +270,9 @@ PRODUCT_FAMILIES = [
 CARRIERS = ["NorthStar Freight", "BlueLine Logistics", "RapidRail", "Global Air Cargo"]
 
 
+from pyspark.sql.types import DecimalType
+
+
 def hash_bucket(column_name: str, salt: int, modulo: int):
     return F.pmod(
         F.xxhash64(F.col(column_name), F.lit(SEED + salt)),
@@ -342,65 +350,62 @@ def require_no_orphans(
         )
 
 
-# METADATA ********************
+def safe_left_join_one_to_one(
+    child_df: DataFrame,
+    parent_df: DataFrame,
+    join_col: str,
+    relationship_name: str,
+    mandatory: bool = True,
+):
+    """Safely perform a left join where the parent must have at most one row per key.
 
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
+    Validates:
+    - Parent has no duplicate keys.
+    - Join does not change the child row count.
+    - Reports (and optionally fails on) unmatched non-null child keys.
+    """
 
-# MARKDOWN ********************
+    child_count = child_df.count()
 
-# ## 2b. Populate date dimension
-# 
-# Use this section when you need to extend or fix the date dimension without regenerating the rest of the synthetic data. It rewrites only the `bronze.date_raw`, `silver.date`, and `gold.dim_date` tables using the current `START_DATE` and `END_DATE`.
-
-# CELL ********************
-
-# 1. Build in-memory date_dim using the current START_DATE and END_DATE
-new_date_dim = (
-    spark.sql(
-        f"""
-        SELECT explode(
-            sequence(to_date('{START_DATE}'), to_date('{END_DATE}'), interval 1 day)
-        ) AS full_date
-        """
+    # 1. Parent grain check
+    dup_parents = (
+        parent_df.groupBy(join_col)
+        .count()
+        .where(F.col("count") > 1)
+        .count()
     )
-    .withColumn("date_key", F.date_format("full_date", "yyyyMMdd").cast("int"))
-    .withColumn("calendar_year", F.year("full_date"))
-    .withColumn("calendar_quarter", F.quarter("full_date"))
-    .withColumn("calendar_month", F.month("full_date"))
-    .withColumn("month_name", F.date_format("full_date", "MMMM"))
-    .withColumn("week_of_year", F.weekofyear("full_date"))
-    .withColumn("day_of_week", F.date_format("full_date", "EEEE"))
-    # Use Spark's dayofweek() (1=Sunday..7=Saturday) and remap so Monday=1..Sunday=7
-    .withColumn(
-        "day_of_week_sort",
-        (F.pmod(F.dayofweek("full_date") + F.lit(5), F.lit(7)) + F.lit(1)).cast("int"),
+    if dup_parents:
+        raise ValueError(
+            f"{relationship_name}: parent has {dup_parents} duplicate {join_col} values"
+        )
+
+    # 2. Row-count preservation
+    joined = child_df.join(parent_df, on=join_col, how="left")
+    joined_count = joined.count()
+    if joined_count != child_count:
+        raise ValueError(
+            f"{relationship_name}: row count changed from {child_count} to {joined_count} during join"
+        )
+
+    # 3. Unmatched foreign keys
+    unmatched = (
+        child_df.select(join_col)
+        .where(F.col(join_col).isNotNull())
+        .join(parent_df.select(join_col), on=join_col, how="left_anti")
+        .count()
     )
-    .withColumn("is_weekend", F.dayofweek("full_date").isin(1, 7))
-)
+    if unmatched:
+        msg = (
+            f"{relationship_name}: {unmatched} non-null child {join_col} values "
+            f"are missing from the parent."
+        )
+        if mandatory:
+            raise ValueError(msg)
+        else:
+            print("WARNING:", msg)
 
-# 2. Overwrite bronze.date_raw with lineage columns
-write_delta(
-    add_lineage(new_date_dim, "SYNTHETIC_DATE"),
-    "bronze.date_raw",
-)
+    return joined
 
-# 3. Conform and validate silver.date
-silver_date = (
-    spark.table("bronze.date_raw")
-    .where(F.col("date_key").isNotNull())
-    .dropDuplicates(["date_key"])
-)
-write_delta(silver_date, "silver.date")
-require_unique("silver.date", ["date_key"])
-
-# 4. Publish gold.dim_date and validate
-write_delta(spark.table("silver.date"), "gold.dim_date")
-require_unique("gold.dim_date", ["date_key"])
-
-print("Refreshed bronze.date_raw, silver.date, and gold.dim_date.")
 
 # METADATA ********************
 
@@ -978,13 +983,147 @@ for table, keys in table_keys.items():
 
 # MARKDOWN ********************
 
-# ## 9. Publish Gold star-schema tables
+# ## 9. Populate date dimension
+# 
+# Use this section when you need to extend or fix the date dimension without regenerating the rest of the synthetic data. It rewrites only the `bronze.date_raw`, `silver.date`, and `gold.dim_date` tables using the current `START_DATE` and `END_DATE`.
+
+# CELL ********************
+
+# 0. Determine calendar bounds from all date columns in Silver (dims + facts)
+from datetime import date as _date
+
+MIN_CALENDAR_START = "2013-01-01"
+FUTURE_YEAR_HORIZON = 5  # extend at least this many years beyond current year
+
+min_calendar_date = _date.fromisoformat(MIN_CALENDAR_START)
+current_year = _date.today().year
+
+date_sources = [
+    # Dimensions
+    ("silver.facility", ["created_on", "modified_on"]),
+    ("silver.customer", ["created_on", "modified_on"]),
+    ("silver.product", ["created_on", "modified_on"]),
+    ("silver.supplier", ["contract_start_date", "created_on", "modified_on"]),
+    ("silver.employee", ["hire_date", "created_on", "modified_on"]),
+    ("silver.technician", ["certification_expiry", "created_on", "modified_on"]),
+    # Assets & commercial
+    ("silver.asset", ["install_date", "warranty_expiry", "created_on", "modified_on"]),
+    ("silver.sales_order", ["order_date", "requested_date"]),
+    # Supply chain
+    (
+        "silver.purchase_order_line",
+        ["order_date", "expected_date", "received_date"],
+    ),
+    (
+        "silver.shipment",
+        ["ship_date", "promised_delivery_date", "actual_delivery_date"],
+    ),
+    ("silver.inventory_snapshot", ["snapshot_date"]),
+    # Service & asset operations
+    ("silver.work_order", ["opened_date", "resolved_date"]),
+    ("silver.asset_daily_status", ["status_date"]),
+]
+
+bounds = []
+for table, cols in date_sources:
+    df = spark.table(table)
+    if not df.columns:
+        continue
+    agg_exprs = []
+    for c in cols:
+        if c in df.columns:
+            agg_exprs.append(F.min(c).alias(f"min_{c}"))
+            agg_exprs.append(F.max(c).alias(f"max_{c}"))
+    if not agg_exprs:
+        continue
+    row = df.agg(*agg_exprs).collect()[0]
+    for c in cols:
+        min_name = f"min_{c}"
+        max_name = f"max_{c}"
+        if min_name in row and max_name in row:
+            mn = row[min_name]
+            mx = row[max_name]
+            if mn is not None and mx is not None:
+                bounds.append((mn, mx))
+
+if bounds:
+    overall_min = min(b[0] for b in bounds)
+    overall_max = max(b[1] for b in bounds)
+    start_year = min(min_calendar_date.year, overall_min.year)
+    # Ensure we cover at least the max data year, current_year + horizon, and 2052
+    max_required_year = max(overall_max.year, current_year + FUTURE_YEAR_HORIZON, 2052)
+    dim_start = f"{start_year}-01-01"
+    dim_end = f"{max_required_year}-12-31"
+else:
+    # Fallback to configured START_DATE/END_DATE if the lakehouse is empty
+    start = _date.fromisoformat(START_DATE)
+    end = _date.fromisoformat(END_DATE)
+    start_year = min(min_calendar_date.year, start.year)
+    max_required_year = max(end.year, current_year + FUTURE_YEAR_HORIZON, 2052)
+    dim_start = f"{start_year}-01-01"
+    dim_end = f"{max_required_year}-12-31"
+
+# 1. Build in-memory date_dim using the derived dim_start and dim_end
+new_date_dim = (
+    spark.sql(
+        f"""
+        SELECT explode(
+            sequence(to_date('{dim_start}'), to_date('{dim_end}'), interval 1 day)
+        ) AS full_date
+        """
+    )
+    .withColumn("date_key", F.date_format("full_date", "yyyyMMdd").cast("int"))
+    .withColumn("calendar_year", F.year("full_date"))
+    .withColumn("calendar_quarter", F.quarter("full_date"))
+    .withColumn("calendar_month", F.month("full_date"))
+    .withColumn("month_name", F.date_format("full_date", "MMMM"))
+    .withColumn("week_of_year", F.weekofyear("full_date"))
+    .withColumn("day_of_week", F.date_format("full_date", "EEEE"))
+    # Use Spark's dayofweek() (1=Sunday..7=Saturday) and remap so Monday=1..Sunday=7
+    .withColumn(
+        "day_of_week_sort",
+        (F.pmod(F.dayofweek("full_date") + F.lit(5), F.lit(7)) + F.lit(1)).cast("int"),
+    )
+    .withColumn("is_weekend", F.dayofweek("full_date").isin(1, 7))
+)
+
+# 2. Overwrite bronze.date_raw with lineage columns
+write_delta(
+    add_lineage(new_date_dim, "SYNTHETIC_DATE"),
+    "bronze.date_raw",
+)
+
+# 3. Conform and validate silver.date
+silver_date = (
+    spark.table("bronze.date_raw")
+    .where(F.col("date_key").isNotNull())
+    .dropDuplicates(["date_key"])
+)
+write_delta(silver_date, "silver.date")
+require_unique("silver.date", ["date_key"])
+
+# 4. Publish gold.dim_date and validate
+write_delta(spark.table("silver.date"), "gold.dim_date")
+require_unique("gold.dim_date", ["date_key"])
+
+print(f"Refreshed bronze.date_raw, silver.date, and gold.dim_date for range {dim_start} to {dim_end}.")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# MARKDOWN ********************
+
+# ## 10. Publish Gold star-schema tables
 
 
 # CELL ********************
 
 gold_map = {
-    # "dim_date": "date",  # date handled separately in section 2a
+    # "dim_date": "date",  # date handled separately in section 9
     "dim_facility": "facility",
     "dim_customer": "customer",
     "dim_product": "product",
@@ -1011,60 +1150,65 @@ for gold_table, silver_table in gold_map.items():
         print(f"Published gold.{gold_table} from silver.{silver_table}")
 
 # 2. Commercial facts
-# 2.1 Fact sales order (already has conformed keys to Customer, Sales Channel, and Date)
+# 2.1 Fact sales order (one row per sales order)
+# Already has surrogate and date keys at the correct grain.
 write_delta(spark.table("silver.sales_order"), "gold.fact_sales_order")
 print("Published gold.fact_sales_order from silver.sales_order")
 
 # 2.2 Fact sales order line
-# Enrich with conformed keys so filters don't have to traverse fact_sales_order
-# NOTE: Do NOT select sales_order_key from the order side to avoid duplicate column names.
-fact_sales_order_line = (
-    spark.table("silver.sales_order_line").alias("l")
-    .join(
-        spark.table("silver.sales_order")
-        .select(
-            "sales_order_id",  # join key
-            # conformed keys to bring down from the order header
-            "customer_key",
-            "sales_channel_key",
-            "order_date_key",
-            "requested_date_key",
-        )
-        .alias("o"),
-        on="sales_order_id",
-        how="left",
-    )
+# Flatten conformed keys from the order header without changing line grain.
+sol_base = spark.table("silver.sales_order_line")
+so_lookup_for_lines = spark.table("silver.sales_order").select(
+    "sales_order_id",  # join key
+    "customer_key",
+    "sales_channel_key",
+    "order_date_key",
+    "requested_date_key",
 )
+
+fact_sales_order_line = safe_left_join_one_to_one(
+    sol_base,
+    so_lookup_for_lines,
+    join_col="sales_order_id",
+    relationship_name=(
+        "gold.fact_sales_order_line.sales_order_id -> silver.sales_order.sales_order_id"
+    ),
+    mandatory=True,
+)
+
 write_delta(fact_sales_order_line, "gold.fact_sales_order_line")
 print("Published gold.fact_sales_order_line enriched with customer/sales channel/date keys")
 
 # 2.3 Fact shipment
-# Enrich with order-level conformed keys to avoid chaining through fact_sales_order
-# NOTE: Do NOT select sales_order_key from the order side to avoid duplicate column names.
-fact_shipment = (
-    spark.table("silver.shipment").alias("s")
-    .join(
-        spark.table("silver.sales_order")
-        .select(
-            "sales_order_key",  # join key (present only once in the projection)
-            "customer_key",
-            "sales_channel_key",
-            "order_date_key",
-            "requested_date_key",
-        )
-        .alias("o"),
-        on="sales_order_key",
-        how="left",
-    )
+# Flatten conformed order keys while keeping one row per shipment.
+shipment_base = spark.table("silver.shipment")
+so_lookup_for_shipments = spark.table("silver.sales_order").select(
+    "sales_order_key",  # join key
+    "customer_key",
+    "sales_channel_key",
+    "order_date_key",
+    "requested_date_key",
 )
+
+fact_shipment = safe_left_join_one_to_one(
+    shipment_base,
+    so_lookup_for_shipments,
+    join_col="sales_order_key",
+    relationship_name=(
+        "gold.fact_shipment.sales_order_key -> silver.sales_order.sales_order_key"
+    ),
+    mandatory=True,
+)
+
 write_delta(fact_shipment, "gold.fact_shipment")
 print("Published gold.fact_shipment enriched with customer/sales channel/date keys")
 
-# 3. Supply-chain facts that already carry conformed keys
+# 3. Supply-chain facts
+# 3.1 Bridge supplier-product assignment (one row per supplier-product)
 write_delta(spark.table("silver.supplier_product"), "gold.bridge_supplier_product")
 print("Published gold.bridge_supplier_product from silver.supplier_product")
 
-# 3.1 Fact purchase order line with purchased_value
+# 3.2 Fact purchase order line with purchased_value (one row per PO line)
 fact_purchase_order_line = (
     spark.table("silver.purchase_order_line")
     .withColumn(
@@ -1075,76 +1219,103 @@ fact_purchase_order_line = (
 write_delta(fact_purchase_order_line, "gold.fact_purchase_order_line")
 print("Published gold.fact_purchase_order_line with purchased_value")
 
-# 3.2 Fact inventory snapshot with inventory_value based on product standard_cost
-fact_inventory_snapshot = (
-    spark.table("silver.inventory_snapshot").alias("i")
-    .join(
-        spark.table("silver.product").select("product_key", "standard_cost").alias("p"),
-        on="product_key",
-        how="left",
-    )
-    .withColumn(
-        "inventory_value",
-        (F.col("quantity_on_hand") * F.col("standard_cost")).cast("decimal(18,2)"),
-    )
+# 3.3 Fact inventory snapshot with standard_cost and inventory_value
+product_cost_lookup = spark.table("silver.product").select("product_key", "standard_cost")
+
+inv_base = spark.table("silver.inventory_snapshot")
+inv_with_cost = safe_left_join_one_to_one(
+    inv_base,
+    product_cost_lookup,
+    join_col="product_key",
+    relationship_name=(
+        "gold.fact_inventory_snapshot.product_key -> silver.product.product_key"
+    ),
+    mandatory=True,
+)
+
+fact_inventory_snapshot = inv_with_cost.withColumn(
+    "inventory_value",
+    (F.col("quantity_on_hand") * F.col("standard_cost")).cast("decimal(18,2)"),
 )
 write_delta(fact_inventory_snapshot, "gold.fact_inventory_snapshot")
-print("Published gold.fact_inventory_snapshot with inventory_value")
+print("Published gold.fact_inventory_snapshot with standard_cost and inventory_value")
 
 # 4. Service and asset operations facts
 # 4.1 Fact work order
-# Enrich with asset-level conformed keys (customer, facility) for flatter access paths
-fact_work_order = (
-    spark.table("silver.work_order").alias("w")
-    .join(
-        spark.table("silver.asset")
-        .select("asset_key", "customer_key", "facility_key")
-        .alias("a"),
-        on="asset_key",
-        how="left",
-    )
+# Enrich with asset-level conformed keys (customer, facility, product) for flatter access paths.
+wo_base = spark.table("silver.work_order")
+asset_lookup_for_wo = spark.table("silver.asset").select(
+    "asset_key",
+    "customer_key",
+    "facility_key",
+    "product_key",  # asset's product
 )
+
+fact_work_order = safe_left_join_one_to_one(
+    wo_base,
+    asset_lookup_for_wo,
+    join_col="asset_key",
+    relationship_name=(
+        "gold.fact_work_order.asset_key -> silver.asset.asset_key"
+    ),
+    mandatory=True,
+)
+
 write_delta(fact_work_order, "gold.fact_work_order")
-print("Published gold.fact_work_order enriched with asset customer/facility keys")
+print("Published gold.fact_work_order enriched with asset customer/facility/product keys")
 
 # 4.2 Fact work order part
-# Enrich with work-order-level and asset-level keys so filters don't have to chain through fact_work_order
-fact_work_order_part = (
-    spark.table("silver.work_order_part").alias("p")
-    .join(
-        fact_work_order.select(
-            "work_order_key",
-            "asset_key",
-            "technician_key",
-            "opened_date_key",
-            "resolved_date_key",
-            "customer_key",
-            "facility_key",
-        ).alias("w"),
-        on="work_order_key",
-        how="left",
-    )
+# Enrich with work-order-level and asset-level keys while keeping one row per part line.
+wop_base = spark.table("silver.work_order_part")
+
+wo_lookup_for_parts = fact_work_order.select(
+    "work_order_key",
+    "asset_key",
+    "technician_key",
+    "opened_date_key",
+    "resolved_date_key",
+    "customer_key",
+    "facility_key",
+    F.col("product_key").alias("asset_product_key"),
 )
+
+fact_work_order_part = safe_left_join_one_to_one(
+    wop_base,
+    wo_lookup_for_parts,
+    join_col="work_order_key",
+    relationship_name=(
+        "gold.fact_work_order_part.work_order_key -> gold.fact_work_order.work_order_key"
+    ),
+    mandatory=True,
+)
+
 write_delta(fact_work_order_part, "gold.fact_work_order_part")
 print(
-    "Published gold.fact_work_order_part enriched with asset/technician/customer/facility/date keys"
+    "Published gold.fact_work_order_part enriched with asset/technician/customer/facility/date keys and asset_product_key",
 )
 
 # 4.3 Fact asset daily status
-# Enrich with asset customer/facility keys to avoid chaining through dim_asset
-fact_asset_daily_status = (
-    spark.table("silver.asset_daily_status").alias("s")
-    .join(
-        spark.table("silver.asset")
-        .select("asset_key", "customer_key", "facility_key")
-        .alias("a"),
-        on="asset_key",
-        how="left",
-    )
+# Enrich with asset customer/facility/product keys to avoid chaining through dim_asset.
+ads_base = spark.table("silver.asset_daily_status")
+asset_lookup_for_status = spark.table("silver.asset").select(
+    "asset_key",
+    "customer_key",
+    "facility_key",
+    "product_key",
 )
-write_delta(fact_asset_daily_status, "gold.fact_asset_daily_status")
-print("Published gold.fact_asset_daily_status enriched with asset customer/facility keys")
 
+fact_asset_daily_status = safe_left_join_one_to_one(
+    ads_base,
+    asset_lookup_for_status,
+    join_col="asset_key",
+    relationship_name=(
+        "gold.fact_asset_daily_status.asset_key -> silver.asset.asset_key"
+    ),
+    mandatory=True,
+)
+
+write_delta(fact_asset_daily_status, "gold.fact_asset_daily_status")
+print("Published gold.fact_asset_daily_status enriched with asset customer/facility/product keys")
 
 # METADATA ********************
 
@@ -1155,15 +1326,69 @@ print("Published gold.fact_asset_daily_status enriched with asset customer/facil
 
 # MARKDOWN ********************
 
-# ## 10. Gold-layer integrity checks
+# ## 11. Gold-layer integrity checks
 
 
 # CELL ********************
 
-for table, keys in table_keys.items():
-    target = next(name for name, source in gold_map.items() if source == table)
-    require_unique(f"gold.{target}", keys)
+from pyspark.sql.types import DecimalType
 
+validation_results = []
+
+
+def _add_validation(table_name: str, validation_name: str, status: str, failed_row_count: int, details: str):
+    global validation_results
+    validation_results.append(
+        (table_name, validation_name, status, int(failed_row_count), details)
+    )
+
+
+# 1. Dimension surrogate key uniqueness and non-null
+for dim_table, key_col in [
+    ("gold.dim_customer", "customer_key"),
+    ("gold.dim_product", "product_key"),
+    ("gold.dim_facility", "facility_key"),
+    ("gold.dim_employee", "employee_key"),
+    ("gold.dim_technician", "technician_key"),
+    ("gold.dim_supplier", "supplier_key"),
+    ("gold.dim_sales_channel", "sales_channel_key"),
+    ("gold.dim_asset", "asset_key"),
+]:
+    df = spark.table(dim_table)
+    dup = df.groupBy(key_col).count().where(F.col("count") > 1).count()
+    nulls = df.where(F.col(key_col).isNull()).count()
+    status = "PASS" if dup == 0 and nulls == 0 else "FAIL"
+    details = f"duplicates={dup}, null_keys={nulls}"
+    _add_validation(dim_table, f"unique_nonnull_{key_col}", status, dup + nulls, details)
+
+# 2. Fact grain uniqueness
+fact_grains = {
+    "gold.fact_sales_order": ["sales_order_id"],
+    "gold.fact_sales_order_line": ["sales_order_line_id"],
+    "gold.fact_purchase_order_line": ["purchase_order_line_id"],
+    "gold.fact_shipment": ["shipment_id"],
+    "gold.fact_inventory_snapshot": [
+        "inventory_snapshot_id"
+    ],  # already one row per snapshot id
+    "gold.fact_work_order": ["work_order_id"],
+    "gold.fact_work_order_part": ["work_order_part_id"],
+    "gold.fact_asset_daily_status": ["asset_daily_status_id"],
+    "gold.bridge_supplier_product": ["supplier_product_id"],
+}
+
+for fact_table, grain_cols in fact_grains.items():
+    df = spark.table(fact_table)
+    dup = (
+        df.groupBy(*grain_cols)
+        .count()
+        .where(F.col("count") > 1)
+        .count()
+    )
+    status = "PASS" if dup == 0 else "FAIL"
+    details = f"duplicate grain rows={dup}"
+    _add_validation(fact_table, f"grain_unique_{','.join(grain_cols)}", status, dup, details)
+
+# 3. Foreign-key existence against dimensions (required relationships)
 foreign_keys = [
     ("gold.dim_employee", "facility_key", "gold.dim_facility", "facility_key"),
     ("gold.dim_technician", "employee_key", "gold.dim_employee", "employee_key"),
@@ -1191,17 +1416,137 @@ foreign_keys = [
     ("gold.fact_asset_daily_status", "asset_key", "gold.dim_asset", "asset_key"),
 ]
 
-for relationship in foreign_keys:
-    require_no_orphans(*relationship)
+for child_table, child_key, parent_table, parent_key in foreign_keys:
+    child_df = spark.table(child_table).select(child_key)
+    parent_df = spark.table(parent_table).select(parent_key)
+    unmatched = (
+        child_df.where(F.col(child_key).isNotNull())
+        .join(parent_df, child_df[child_key] == parent_df[parent_key], "left_anti")
+        .count()
+    )
+    status = "PASS" if unmatched == 0 else "FAIL"
+    details = f"unmatched non-null {child_key} values={unmatched}"
+    _add_validation(
+        child_table,
+        f"fk_{child_key}_to_{parent_table}.{parent_key}",
+        status,
+        unmatched,
+        details,
+    )
 
+# 4. Date-key existence in dim_date for non-null keys
+fact_date_keys = {
+    "gold.fact_sales_order": ["order_date_key", "requested_date_key"],
+    "gold.fact_sales_order_line": ["order_date_key", "requested_date_key"],
+    "gold.fact_purchase_order_line": [
+        "order_date_key",
+        "expected_date_key",
+        "received_date_key",
+    ],
+    "gold.fact_shipment": [
+        "ship_date_key",
+        "promised_delivery_date_key",
+        "actual_delivery_date_key",
+        "order_date_key",
+        "requested_date_key",
+    ],
+    "gold.fact_inventory_snapshot": ["snapshot_date_key"],
+    "gold.fact_work_order": ["opened_date_key", "resolved_date_key"],
+    "gold.fact_work_order_part": ["opened_date_key", "resolved_date_key"],
+    "gold.fact_asset_daily_status": ["status_date_key"],
+}
+
+for fact_table, date_cols in fact_date_keys.items():
+    df = spark.table(fact_table)
+    dim_dates = spark.table("gold.dim_date").select("date_key").distinct()
+    for col_name in date_cols:
+        if col_name not in df.columns:
+            continue
+        unmatched = (
+            df.select(col_name)
+            .where(F.col(col_name).isNotNull())
+            .join(dim_dates, df[col_name] == dim_dates["date_key"], "left_anti")
+            .count()
+        )
+        status = "PASS" if unmatched == 0 else "FAIL"
+        details = f"non-null {col_name} values missing from gold.dim_date={unmatched}"
+        _add_validation(
+            fact_table,
+            f"datekey_{col_name}_in_dim_date",
+            status,
+            unmatched,
+            details,
+        )
+
+# 5. Financial column correctness and types
+# 5a. purchased_value
+pol = spark.table("gold.fact_purchase_order_line")
+
+purchased_type = next(
+    (f.dataType for f in pol.schema.fields if f.name == "purchased_value"),
+    None,
+)
+ptype_ok = isinstance(purchased_type, DecimalType)
+
+purchased_mismatch = pol.where(
+    F.abs(
+        F.col("purchased_value") - (F.col("ordered_quantity") * F.col("unit_cost"))
+    )
+    > F.lit(0.005)
+).count()
+
+status = "PASS" if ptype_ok and purchased_mismatch == 0 else "FAIL"
+_details = f"decimal_type={ptype_ok}, mismatched_rows={purchased_mismatch}"
+_add_validation(
+    "gold.fact_purchase_order_line",
+    "purchased_value_correctness",
+    status,
+    purchased_mismatch if purchased_mismatch else (0 if ptype_ok else 1),
+    _details,
+)
+
+# 5b. inventory_value
+fis = spark.table("gold.fact_inventory_snapshot")
+
+inv_type = next(
+    (f.dataType for f in fis.schema.fields if f.name == "inventory_value"),
+    None,
+)
+itype_ok = isinstance(inv_type, DecimalType)
+
+inventory_mismatch = fis.where(
+    F.abs(
+        F.col("inventory_value")
+        - (F.col("quantity_on_hand") * F.col("standard_cost"))
+    )
+    > F.lit(0.005)
+).count()
+
+status = "PASS" if itype_ok and inventory_mismatch == 0 else "FAIL"
+_details = f"decimal_type={itype_ok}, mismatched_rows={inventory_mismatch}"
+_add_validation(
+    "gold.fact_inventory_snapshot",
+    "inventory_value_correctness",
+    status,
+    inventory_mismatch if inventory_mismatch else (0 if itype_ok else 1),
+    _details,
+)
+
+# 6. Legacy checks: inventory and revenue sanity
 invalid_revenue = (
     spark.table("gold.fact_sales_order_line")
     .where((F.col("line_revenue") <= 0) | (F.col("quantity") <= 0))
     .limit(1)
     .count()
 )
-if invalid_revenue:
-    raise ValueError("Gold sales order lines contain nonpositive quantities or revenue")
+status = "PASS" if invalid_revenue == 0 else "FAIL"
+_add_validation(
+    "gold.fact_sales_order_line",
+    "positive_quantity_and_revenue",
+    status,
+    invalid_revenue,
+    f"rows_with_nonpositive_quantity_or_revenue={invalid_revenue}",
+)
 
 invalid_inventory = (
     spark.table("gold.fact_inventory_snapshot")
@@ -1213,11 +1558,30 @@ invalid_inventory = (
     .limit(1)
     .count()
 )
-if invalid_inventory:
-    raise ValueError("Gold inventory contains negative quantities")
+status = "PASS" if invalid_inventory == 0 else "FAIL"
+_add_validation(
+    "gold.fact_inventory_snapshot",
+    "nonnegative_inventory_quantities",
+    status,
+    invalid_inventory,
+    f"rows_with_negative_inventory_fields={invalid_inventory}",
+)
+
+# 7. Build validation summary DataFrame and fail if any required check failed
+validation_df = spark.createDataFrame(
+    validation_results,
+    ["table_name", "validation_name", "status", "failed_row_count", "details"],
+)
+
+write_delta(validation_df, "gold.validation_summary")
+
+display(validation_df.orderBy("table_name", "validation_name"))
+
+failed = validation_df.where(F.col("status") == "FAIL").count()
+if failed:
+    raise ValueError(f"Gold-layer validation failed for {failed} checks. See gold.validation_summary for details.")
 
 print("Gold-layer uniqueness, referential integrity, and business-rule checks passed.")
-
 
 # METADATA ********************
 
@@ -1228,7 +1592,7 @@ print("Gold-layer uniqueness, referential integrity, and business-rule checks pa
 
 # MARKDOWN ********************
 
-# ## 11. Direct Lake optimization and load audit
+# ## 12. Direct Lake optimization and load audit
 
 
 # CELL ********************
