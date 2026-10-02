@@ -39,7 +39,7 @@
 SCALE = "small"  # small, medium, or large
 SEED = 20261001
 START_DATE = "2015-01-01"
-END_DATE = "2029-12-31"
+END_DATE = "2030-12-31"
 WRITE_MODE = "overwrite"
 OPTIMIZE_GOLD = False
 
