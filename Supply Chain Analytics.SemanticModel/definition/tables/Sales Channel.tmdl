@@ -1,13 +1,13 @@
-/// Routes through which customers place commercial orders.
+/// Routes through which customers placed orders associated with shipments.
 table 'Sales Channel'
-	lineageTag: 9ea77560-5173-4fda-bfd4-63d1dd2ab373
+	lineageTag: a7069682-074d-4e8a-b7a8-620a7d946269
 
-	/// Integer relationship key optimized for Direct Lake joins.
+	/// Integer sales-channel relationship key.
 	column 'Sales Channel Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
-		lineageTag: 733b4630-55a0-4cdd-9ded-08cdd6c9cfb7
+		lineageTag: 34030b25-b8f4-45cf-bc9e-2a745da43cca
 		summarizeBy: none
 		sourceColumn: sales_channel_key
 
@@ -16,32 +16,30 @@ table 'Sales Channel'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
-		lineageTag: e0898e67-bb1d-43ca-b1fd-349709706018
+		lineageTag: a669e371-9aeb-47c5-9df6-1038c752b289
 		summarizeBy: none
 		sourceColumn: sales_channel_id
 
 	/// Business-facing sales-channel name.
 	column 'Sales Channel Name'
 		dataType: string
-		lineageTag: e6c13e60-f4de-4f90-8de3-8c77d1e4847f
+		lineageTag: e91eaad3-f0a6-4f7a-9e21-16b50457bd4c
 		summarizeBy: none
 		sourceColumn: sales_channel_name
 
-	/// Broader channel grouping used in executive reporting.
+	/// Broader channel grouping used in shipment analysis.
 	column 'Channel Group'
 		dataType: string
-		lineageTag: 4de5c4a6-448a-4e97-8f41-1bef16790f1e
+		lineageTag: 2a86a185-ff74-4835-bd9a-07f7a02e69d5
 		summarizeBy: none
 		sourceColumn: channel_group
 
-	/// Current channel lifecycle status.
+	/// Current sales-channel lifecycle status.
 	column 'Sales Channel Status'
 		dataType: string
-		lineageTag: a205bb4e-6c37-4b80-9f8e-1864f7b22821
+		lineageTag: 442d77fa-8149-4a53-827d-5f7a845dc4fe
 		summarizeBy: none
 		sourceColumn: status
-
-		changedProperty = Name
 
 	partition 'Sales Channel' = entity
 		mode: directLake

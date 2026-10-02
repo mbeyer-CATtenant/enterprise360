@@ -3,10 +3,40 @@ table Supplier
 	lineageTag: d199ffbb-d6a1-4eae-827f-cc07a511d6f9
 
 	/// Number of suppliers currently available for procurement.
-	measure '# Active Suppliers' = CALCULATE(COUNTROWS(Supplier), KEEPFILTERS(Supplier[Status] = "Active"))
+	measure '# Active Suppliers' = CALCULATE(COUNTROWS(Supplier), KEEPFILTERS(Supplier[Supplier Status] = "Active"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
 		lineageTag: 04ee5b9c-bc24-4bca-b75b-017f75a96483
+
+	/// Number of supplier contracts by their start date.
+	measure '# Supplier Contracts Started' =
+			CALCULATE(
+			    COUNTROWS(Supplier),
+			    USERELATIONSHIP(Supplier[Contract Start Date Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 6ee157ad-1608-4458-b25c-164859b4f43d
+
+	/// Number of supplier records by their creation date.
+	measure '# Suppliers Created' =
+			CALCULATE(
+			    COUNTROWS(Supplier),
+			    USERELATIONSHIP(Supplier[Created On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 267efab8-7d61-49ec-bdb2-b7605b926857
+
+	/// Number of supplier records by their most recent modification date.
+	measure '# Suppliers Modified' =
+			CALCULATE(
+			    COUNTROWS(Supplier),
+			    USERELATIONSHIP(Supplier[Modified On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 2435f9a5-c19a-4ab0-bd49-6a9e96078386
 
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Supplier Key'
@@ -21,6 +51,7 @@ table Supplier
 	column 'Supplier ID'
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: ab814630-9b56-461b-afa5-51a4c3559a28
 		summarizeBy: none
 		sourceColumn: supplier_id
@@ -63,7 +94,7 @@ table Supplier
 		sourceColumn: contract_start_date
 
 	/// Current procurement lifecycle status.
-	column Status
+	column 'Supplier Status'
 		dataType: string
 		lineageTag: eb6c4d05-7fc5-4a93-b3af-04cdb8571109
 		summarizeBy: none
@@ -84,6 +115,33 @@ table Supplier
 		lineageTag: b7e593a3-682b-44b7-b892-076a86dd29a4
 		summarizeBy: none
 		sourceColumn: modified_on
+
+	/// Integer date key for supplier contract-start analysis.
+	column 'Contract Start Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 19e1fa02-96e0-45c4-8448-726299e0fb3a
+		summarizeBy: none
+		sourceColumn: contract_start_date_key
+
+	/// Integer date key for supplier creation-date analysis.
+	column 'Created On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 797b99a9-0dc2-4f3a-8747-dd6609e22a6d
+		summarizeBy: none
+		sourceColumn: created_on_key
+
+	/// Integer date key for supplier modification-date analysis.
+	column 'Modified On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: d7bc5686-8ed8-40cb-a889-8033068f996a
+		summarizeBy: none
+		sourceColumn: modified_on_key
 
 	partition Supplier = entity
 		mode: directLake

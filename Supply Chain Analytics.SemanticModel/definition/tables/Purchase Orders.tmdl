@@ -3,7 +3,7 @@ table 'Purchase Orders'
 	lineageTag: 9f461146-5aad-401e-8fb2-c91eb4bb1b9a
 
 	/// Extended procurement value based on ordered quantity and unit cost.
-	measure 'Purchased Value' = SUMX('Purchase Orders', 'Purchase Orders'[Ordered Quantity] * 'Purchase Orders'[Unit Cost])
+	measure 'Purchased Value' = SUM('Purchase Orders'[Purchased Value Source])
 		formatString: $#,##0.00
 		displayFolder: Measures\Value
 		lineageTag: e6fc4ff6-adff-4873-80fd-d1bd25d99086
@@ -51,6 +51,26 @@ table 'Purchase Orders'
 		displayFolder: Measures\Rates
 		lineageTag: ee88ca78-7d4e-4102-b7c4-2428aa82dcc7
 
+	/// Number of distinct purchase orders by their expected receipt date.
+	measure '# Purchase Orders by Expected Date' =
+			CALCULATE(
+			    [# Purchase Orders],
+			    USERELATIONSHIP('Purchase Orders'[Expected Date Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: e9570436-10bf-4114-af64-e34030bfe417
+
+	/// Number of distinct purchase orders by their actual receipt date.
+	measure '# Purchase Orders by Received Date' =
+			CALCULATE(
+			    [# Purchase Orders],
+			    USERELATIONSHIP('Purchase Orders'[Received Date Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: a27ce0b4-42a6-40ae-8879-4b83ca93de54
+
 	/// Stable purchase-order-line identifier.
 	column 'Purchase Order Line ID'
 		dataType: string
@@ -64,6 +84,7 @@ table 'Purchase Orders'
 	column 'Purchase Order ID'
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 5186b3d2-33a0-456b-92a1-2c37e17734b2
 		summarizeBy: none
 		sourceColumn: purchase_order_id
@@ -150,6 +171,7 @@ table 'Purchase Orders'
 	column 'Ordered Quantity'
 		dataType: int64
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 0a534203-34e1-43c3-b02e-5d1e00a9412b
 		summarizeBy: none
 		sourceColumn: ordered_quantity
@@ -158,6 +180,7 @@ table 'Purchase Orders'
 	column 'Received Quantity'
 		dataType: int64
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: e9482540-f852-458d-8597-022dd70392d3
 		summarizeBy: none
 		sourceColumn: received_quantity
@@ -166,6 +189,7 @@ table 'Purchase Orders'
 	column 'Unit Cost'
 		dataType: decimal
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: dca3f668-bdaa-4421-9885-a071466a402b
 		summarizeBy: none
 		sourceColumn: unit_cost
@@ -176,6 +200,42 @@ table 'Purchase Orders'
 		lineageTag: 3a0dcff1-d958-4225-9c02-31734f0166d7
 		summarizeBy: none
 		sourceColumn: purchase_order_status
+
+	/// Integer date key for the purchase-order date relationship.
+	column 'Order Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 33b5488e-7bc3-4bd4-a301-f43bf77e0767
+		summarizeBy: none
+		sourceColumn: order_date_key
+
+	/// Integer date key for expected receipt-date analysis.
+	column 'Expected Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 4f01157d-ec57-4db9-83ef-a1011b7becb3
+		summarizeBy: none
+		sourceColumn: expected_date_key
+
+	/// Integer date key for actual receipt-date analysis.
+	column 'Received Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 08735a9a-9f7e-437b-9bdc-e19195016a2f
+		summarizeBy: none
+		sourceColumn: received_date_key
+
+	/// Materialized purchase-order-line value used by the Purchased Value measure.
+	column 'Purchased Value Source'
+		dataType: decimal
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 6e9dc1de-e96b-413b-977c-f8a545ca9db8
+		summarizeBy: none
+		sourceColumn: purchased_value
 
 	partition 'Purchase Orders' = entity
 		mode: directLake

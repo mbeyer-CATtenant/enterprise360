@@ -67,6 +67,9 @@ table Date
 		lineageTag: 8cafe6a7-2534-4d38-bc9a-ebbe0cda9d67
 		summarizeBy: none
 		sourceColumn: day_of_week
+		sortByColumn: 'Day of Week Sort'
+
+		changedProperty = IsHidden
 
 	/// Identifies Saturday and Sunday dates.
 	column 'Is Weekend'
@@ -74,6 +77,14 @@ table Date
 		lineageTag: 395a9cd4-9ca7-4942-b44d-cf8cd710d322
 		summarizeBy: none
 		sourceColumn: is_weekend
+
+	/// Numeric weekday sequence used to sort Day of Week chronologically.
+	column 'Day of Week Sort'
+		dataType: int64
+		isHidden
+		lineageTag: 1e9a4ea7-bc4a-48c5-be40-bbb56dbd7edc
+		summarizeBy: none
+		sourceColumn: day_of_week_sort
 
 	hierarchy 'Calendar Hierarchy'
 		lineageTag: 6637949c-01fa-4142-b86c-514da07693fb

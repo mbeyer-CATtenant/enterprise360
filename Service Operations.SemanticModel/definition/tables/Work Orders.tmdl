@@ -78,6 +78,16 @@ table 'Work Orders'
 		displayFolder: Measures\Rates
 		lineageTag: 90024468-7933-4112-b0ef-8ad0abc4977f
 
+	/// Number of completed work orders by their resolution date.
+	measure '# Resolved Work Orders' =
+			CALCULATE(
+			    [# Completed Work Orders],
+			    USERELATIONSHIP('Work Orders'[Resolved Date Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 17f9f68b-a3b0-47f0-8f7a-6a9031ae2b5d
+
 	/// Integer work-order key optimized for Direct Lake joins.
 	column 'Work Order Key'
 		dataType: int64
@@ -90,10 +100,11 @@ table 'Work Orders'
 	/// Stable work-order identifier used to connect consumed parts.
 	column 'Work Order ID'
 		dataType: string
-		isHidden
 		lineageTag: 11af8498-1fd9-4c6c-a59e-4829140c9870
 		summarizeBy: none
 		sourceColumn: work_order_id
+
+		changedProperty = IsHidden
 
 	/// Integer asset relationship key.
 	column 'Asset Key'
@@ -112,6 +123,8 @@ table 'Work Orders'
 		lineageTag: 93917bf8-7386-47db-9c01-05c41c10a683
 		summarizeBy: none
 		sourceColumn: asset_id
+
+		changedProperty = IsHidden
 
 	/// Integer technician relationship key.
 	column 'Technician Key'
@@ -157,6 +170,7 @@ table 'Work Orders'
 	column 'Duration Hours'
 		dataType: decimal
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: d4b8d1fd-dd21-4121-b959-4e3c12d5473f
 		summarizeBy: none
 		sourceColumn: duration_hours
@@ -180,9 +194,55 @@ table 'Work Orders'
 	column 'Labor Cost Value'
 		dataType: decimal
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: a9ff60e7-78a4-4192-a5e3-0f3e78aac3f0
 		summarizeBy: none
 		sourceColumn: labor_cost
+
+	/// Integer date key for the opened-date relationship.
+	column 'Opened Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 80d75293-b490-4aff-ba44-0a8670dd0466
+		summarizeBy: none
+		sourceColumn: opened_date_key
+
+	/// Integer date key for the resolved-date relationship.
+	column 'Resolved Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 8dc9db45-504e-47db-9ccf-a9971cf7b03e
+		summarizeBy: none
+		sourceColumn: resolved_date_key
+
+	/// Integer customer key for the direct Work Orders relationship.
+	column 'Customer Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: e204a309-a57c-43c9-8de6-5af813f214d4
+		summarizeBy: none
+		sourceColumn: customer_key
+
+	/// Integer facility key for the direct Work Orders relationship.
+	column 'Facility Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: d0bec3dd-f353-4600-8622-53bdd93b804b
+		summarizeBy: none
+		sourceColumn: facility_key
+
+	/// Integer serviced-product key for the direct Work Orders relationship.
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: fdb8a730-606a-45bc-8af8-5143f4e8e8b0
+		summarizeBy: none
+		sourceColumn: product_key
 
 	partition 'Work Orders' = entity
 		mode: directLake

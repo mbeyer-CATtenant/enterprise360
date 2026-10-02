@@ -2,6 +2,26 @@
 table Product
 	lineageTag: c60f63ed-9d4e-42c0-94e6-20633db676fc
 
+	/// Number of product records by their creation date.
+	measure '# Products Created' =
+			CALCULATE(
+			    COUNTROWS(Product),
+			    USERELATIONSHIP(Product[Created On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: acb2ea16-fa0d-4a6a-8fda-f1b9d8d9ea21
+
+	/// Number of product records by their most recent modification date.
+	measure '# Products Modified' =
+			CALCULATE(
+			    COUNTROWS(Product),
+			    USERELATIONSHIP(Product[Modified On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 006bc5da-b3e2-412b-b072-98d3e4a9e944
+
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Product Key'
 		dataType: int64
@@ -15,6 +35,7 @@ table Product
 	column 'Product ID'
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 9c7ecad9-feaa-4a48-b5a1-ba11c3f6688e
 		summarizeBy: none
 		sourceColumn: product_id
@@ -92,6 +113,40 @@ table Product
 		lineageTag: 5a2f8689-83e4-47f1-9055-4e4fec326632
 		summarizeBy: none
 		sourceColumn: status
+
+	/// Date on which the product record was created.
+	column 'Created On'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: ecfdfe62-6323-4af9-83d0-c6c418a015bf
+		summarizeBy: none
+		sourceColumn: created_on
+
+	/// Integer date key for product creation-date analysis.
+	column 'Created On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: f36b2388-58cb-410c-bdd2-88a93d9040a2
+		summarizeBy: none
+		sourceColumn: created_on_key
+
+	/// Date on which the product record was last modified.
+	column 'Modified On'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 0b34a5a1-d504-4c1a-b668-6fb90174bcc5
+		summarizeBy: none
+		sourceColumn: modified_on
+
+	/// Integer date key for product modification-date analysis.
+	column 'Modified On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 1c7aeae9-55de-4c34-90d8-0028811c4c7a
+		summarizeBy: none
+		sourceColumn: modified_on_key
 
 	partition Product = entity
 		mode: directLake

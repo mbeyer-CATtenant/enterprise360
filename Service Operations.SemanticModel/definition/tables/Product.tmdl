@@ -2,6 +2,26 @@
 table Product
 	lineageTag: f34705ec-b9d2-4579-a990-2314c90e539c
 
+	/// Number of product records by their creation date.
+	measure '# Products Created' =
+			CALCULATE(
+			    COUNTROWS(Product),
+			    USERELATIONSHIP(Product[Created On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 863ecb85-04d2-41e8-a179-ad1be85c7b43
+
+	/// Number of product records by their most recent modification date.
+	measure '# Products Modified' =
+			CALCULATE(
+			    COUNTROWS(Product),
+			    USERELATIONSHIP(Product[Modified On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 8d11842d-68ba-441a-ac25-3ab69ed9b4ae
+
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Product Key'
 		dataType: int64
@@ -15,6 +35,7 @@ table Product
 	column 'Product ID'
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 3d810209-bd6e-44d2-a886-f0734a1f5d19
 		summarizeBy: none
 		sourceColumn: product_id
@@ -87,11 +108,45 @@ table Product
 		sourceColumn: critical_spare
 
 	/// Current product lifecycle status.
-	column Status
+	column 'Product Status'
 		dataType: string
 		lineageTag: 76e81384-614d-4e00-9034-7e07559bb25b
 		summarizeBy: none
 		sourceColumn: status
+
+	/// Date on which the product record was created.
+	column 'Created On'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: b9876ef2-af13-4af6-9707-ea0bdb53987e
+		summarizeBy: none
+		sourceColumn: created_on
+
+	/// Integer date key for product creation-date analysis.
+	column 'Created On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 190fd2a8-02b2-47ae-b83c-59cd5b2bd7d9
+		summarizeBy: none
+		sourceColumn: created_on_key
+
+	/// Date on which the product record was last modified.
+	column 'Modified On'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: cb95dd07-a731-4a63-a5b7-344d29176352
+		summarizeBy: none
+		sourceColumn: modified_on
+
+	/// Integer date key for product modification-date analysis.
+	column 'Modified On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: a498bca6-1bac-486e-855e-446363b158bc
+		summarizeBy: none
+		sourceColumn: modified_on_key
 
 	partition Product = entity
 		mode: directLake

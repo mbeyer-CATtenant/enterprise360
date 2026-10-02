@@ -3,10 +3,40 @@ table Technician
 	lineageTag: 2b54c142-6beb-45c3-9eaf-770d02306c3e
 
 	/// Number of technicians currently available for assignment.
-	measure '# Active Technicians' = CALCULATE(COUNTROWS(Technician), KEEPFILTERS(Technician[Status] = "Active"))
+	measure '# Active Technicians' = CALCULATE(COUNTROWS(Technician), KEEPFILTERS(Technician[Technician Status] = "Active"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
 		lineageTag: 52733e2a-fb3f-40b1-a824-a1543a194162
+
+	/// Number of technician certifications by their expiration date.
+	measure '# Technician Certifications Expiring' =
+			CALCULATE(
+			    COUNTROWS(Technician),
+			    USERELATIONSHIP(Technician[Certification Expiry Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 21db52d4-ff3d-4809-8aa0-e434d0a532d8
+
+	/// Number of technician records by their creation date.
+	measure '# Technicians Created' =
+			CALCULATE(
+			    COUNTROWS(Technician),
+			    USERELATIONSHIP(Technician[Created On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 22c8f1e4-fe70-4626-81ab-4eca1271c406
+
+	/// Number of technician records by their most recent modification date.
+	measure '# Technicians Modified' =
+			CALCULATE(
+			    COUNTROWS(Technician),
+			    USERELATIONSHIP(Technician[Modified On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: ed4d5807-8597-43c4-86ec-8ee1abcd184a
 
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Technician Key'
@@ -20,10 +50,11 @@ table Technician
 	/// Stable technician identifier used by work-order relationships.
 	column 'Technician ID'
 		dataType: string
-		isHidden
 		lineageTag: 49b22b22-70e9-48b0-9ab5-4cf691384e78
 		summarizeBy: none
 		sourceColumn: technician_id
+
+		changedProperty = IsHidden
 
 	/// Integer employee relationship key.
 	column 'Employee Key'
@@ -42,6 +73,8 @@ table Technician
 		lineageTag: 5920465d-40e2-41af-bd6b-2d0080527713
 		summarizeBy: none
 		sourceColumn: employee_id
+
+		changedProperty = IsHidden
 
 	/// Integer facility key retained for technician assignment analysis.
 	column 'Facility Key'
@@ -84,11 +117,54 @@ table Technician
 		sourceColumn: certification_expiry
 
 	/// Current technician availability status.
-	column Status
+	column 'Technician Status'
 		dataType: string
 		lineageTag: d205bc6f-052e-4866-9fac-dd10a497f53f
 		summarizeBy: none
 		sourceColumn: status
+
+	/// Integer date key for technician certification-expiry analysis.
+	column 'Certification Expiry Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: b6f27743-7f84-49eb-8fb8-9d9d0f86ccfc
+		summarizeBy: none
+		sourceColumn: certification_expiry_key
+
+	/// Date on which the technician record was created.
+	column 'Created On'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: ccac9a72-ea55-407b-a581-d9b2743835ab
+		summarizeBy: none
+		sourceColumn: created_on
+
+	/// Integer date key for technician creation-date analysis.
+	column 'Created On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 8401a1ca-509d-454e-b811-a21b000853e0
+		summarizeBy: none
+		sourceColumn: created_on_key
+
+	/// Date on which the technician record was last modified.
+	column 'Modified On'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: b3dff123-05e2-4aec-8bd6-316bb5597c3f
+		summarizeBy: none
+		sourceColumn: modified_on
+
+	/// Integer date key for technician modification-date analysis.
+	column 'Modified On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 10d08bb7-599e-48e4-b443-fd666fab6cd4
+		summarizeBy: none
+		sourceColumn: modified_on_key
 
 	partition Technician = entity
 		mode: directLake

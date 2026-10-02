@@ -2,6 +2,26 @@
 table Facility
 	lineageTag: d9c4171c-c7d4-4007-bbc1-282fe45c2348
 
+	/// Number of facility records by their creation date.
+	measure '# Facilities Created' =
+			CALCULATE(
+			    COUNTROWS(Facility),
+			    USERELATIONSHIP(Facility[Created On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 02543c34-07b3-4d8b-b8af-889956241ea4
+
+	/// Number of facility records by their most recent modification date.
+	measure '# Facilities Modified' =
+			CALCULATE(
+			    COUNTROWS(Facility),
+			    USERELATIONSHIP(Facility[Modified On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 818c3495-d0c9-4f7c-a7bd-b836b2c3be69
+
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Facility Key'
 		dataType: int64
@@ -14,10 +34,11 @@ table Facility
 	/// Stable facility identifier used by operational relationships.
 	column 'Facility ID'
 		dataType: string
-		isHidden
 		lineageTag: 174a3046-c0ad-4767-ba1b-a8a072010b9e
 		summarizeBy: none
 		sourceColumn: facility_id
+
+		changedProperty = IsHidden
 
 	/// Business-facing facility name.
 	column 'Facility Name'
@@ -65,11 +86,45 @@ table Facility
 		sourceColumn: capacity_units
 
 	/// Current facility lifecycle status.
-	column Status
+	column 'Facility Status'
 		dataType: string
 		lineageTag: b4df67da-273d-4d05-990e-034669c6b279
 		summarizeBy: none
 		sourceColumn: status
+
+	/// Date on which the facility record was created.
+	column 'Created On'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 0caf3017-aa30-4560-bb56-468629728df2
+		summarizeBy: none
+		sourceColumn: created_on
+
+	/// Integer date key for facility creation-date analysis.
+	column 'Created On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: cede9ce4-547c-4e92-a53f-0bab4ded25a2
+		summarizeBy: none
+		sourceColumn: created_on_key
+
+	/// Date on which the facility record was last modified.
+	column 'Modified On'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: b02f8247-917c-4c34-9780-a9f4a19924a8
+		summarizeBy: none
+		sourceColumn: modified_on
+
+	/// Integer date key for facility modification-date analysis.
+	column 'Modified On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 09b466d6-58b4-4252-8d34-1bc0aff1cb02
+		summarizeBy: none
+		sourceColumn: modified_on_key
 
 	partition Facility = entity
 		mode: directLake

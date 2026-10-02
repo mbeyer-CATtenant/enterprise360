@@ -39,7 +39,7 @@ table Sales
 		lineageTag: 07915bbf-cfb5-42a7-a84f-6924fc0cac96
 
 	/// Number of distinct orders represented in sales detail.
-	measure '# Orders with Sales' = DISTINCTCOUNT(Sales[Sales Order ID])
+	measure '# Orders with Sales' = DISTINCTCOUNT(Sales[Sales Order Key])
 		formatString: #,##0
 		displayFolder: Measures\Counts
 		lineageTag: c5fa7b4e-a7a4-403d-a068-ee4b47ceecf0
@@ -51,16 +51,36 @@ table Sales
 		lineageTag: 82ed5844-f8b0-4b54-b8f9-f3a3ff2b0663
 
 	/// Revenue accumulated from the beginning of the calendar year.
-	measure 'Total Revenue (ytd)' = TOTALYTD([Total Revenue], Date[Date])
+	measure 'Total Revenue (ytd)' = TOTALYTD([Total Revenue], 'Date'[Date])
 		formatString: $#,##0.00
 		displayFolder: Measures\Time Intelligence
 		lineageTag: 1fa27668-c524-4de4-93e5-05b55049da06
 
 	/// Revenue for the comparable prior-year period.
-	measure 'Total Revenue (ly)' = CALCULATE([Total Revenue], SAMEPERIODLASTYEAR(Date[Date]))
+	measure 'Total Revenue (ly)' = CALCULATE([Total Revenue], SAMEPERIODLASTYEAR('Date'[Date]))
 		formatString: $#,##0.00
 		displayFolder: Measures\Time Intelligence
 		lineageTag: e6122682-d755-4212-aba4-86844121c924
+
+	/// Sales revenue analyzed by the customer-requested fulfillment date.
+	measure 'Total Revenue by Requested Date' =
+			CALCULATE(
+			    [Total Revenue],
+			    USERELATIONSHIP(Sales[Requested Date Key], 'Date'[Date Key])
+			)
+		formatString: $#,##0.00
+		displayFolder: Measures\Date Roles
+		lineageTag: f946d4bd-1ac9-479f-80ee-23100cc02cd6
+
+	/// Units sold analyzed by the customer-requested fulfillment date.
+	measure 'Units Sold by Requested Date' =
+			CALCULATE(
+			    [Units Sold],
+			    USERELATIONSHIP(Sales[Requested Date Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 1aa03ec6-236d-4b94-95cb-64651b534f42
 
 	/// Stable order-line identifier.
 	column 'Sales Order Line ID'
@@ -84,6 +104,7 @@ table Sales
 	column 'Sales Order ID'
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: bd8143c8-047f-45c1-90af-ba9d9e9e3a50
 		summarizeBy: none
 		sourceColumn: sales_order_id
@@ -110,6 +131,7 @@ table Sales
 	column Quantity
 		dataType: int64
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 02295331-64a8-49f7-93f2-0a57a4b6f18b
 		summarizeBy: none
 		sourceColumn: quantity
@@ -134,6 +156,7 @@ table Sales
 	column 'Line Revenue'
 		dataType: decimal
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: ce95374c-800e-4cf5-b854-30127aba957b
 		summarizeBy: none
 		sourceColumn: line_revenue
@@ -142,9 +165,46 @@ table Sales
 	column 'Line Cost'
 		dataType: decimal
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 7a12b104-ab5c-44f0-a07a-cbda82ea7230
 		summarizeBy: none
 		sourceColumn: line_cost
+
+	/// Integer customer key for the direct Sales-to-Customer relationship.
+	column 'Customer Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: d05966a8-14eb-40f6-8137-c6f024c6a28c
+		summarizeBy: none
+		sourceColumn: customer_key
+
+	/// Integer sales-channel key for the direct Sales-to-Sales Channel relationship.
+	column 'Sales Channel Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: c3e349f9-69ad-41e1-a6b6-49ca06e55838
+		summarizeBy: none
+		sourceColumn: sales_channel_key
+
+	/// Integer date key for the sales order date.
+	column 'Order Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 3eba6f24-d913-4cea-95d1-b68afa778910
+		summarizeBy: none
+		sourceColumn: order_date_key
+
+	/// Integer date key for requested-date sales analysis.
+	column 'Requested Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 206b48b0-e0fe-4251-8dd5-47c65e223f4c
+		summarizeBy: none
+		sourceColumn: requested_date_key
 
 	partition Sales = entity
 		mode: directLake

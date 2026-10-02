@@ -1,10 +1,11 @@
+/// Direct Lake supply-chain model covering purchase-order lines, shipments, inventory snapshots, and supplier-product assignments with conformed Supplier, Customer, Product, Facility, Sales Channel, and Date dimensions sourced from the Enterprise 360 Gold lakehouse.
 model Model
 	culture: en-US
 	defaultPowerBIDataSourceVersion: powerBI_V3
 	discourageImplicitMeasures
 	sourceQueryCulture: en-US
 
-annotation PBI_ProTooling = ["DirectLakeOnOneLakeInWeb","WebModelingEdit","TMDLView_Desktop"]
+annotation PBI_ProTooling = ["DirectLakeOnOneLakeInWeb","WebModelingEdit","TMDLView_Desktop","MCP-PBIModeling"]
 
 ref table Date
 ref table Product
@@ -14,4 +15,6 @@ ref table 'Purchase Orders'
 ref table Shipments
 ref table Inventory
 ref table 'Supplier Products'
+ref table Customer
+ref table 'Sales Channel'
 

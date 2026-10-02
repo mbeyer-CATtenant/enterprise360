@@ -39,6 +39,16 @@ table Orders
 		displayFolder: Measures\Rates
 		lineageTag: 949bcdda-bf2a-4200-8b2f-e2b3a7a12b23
 
+	/// Number of sales orders by the date requested for fulfillment.
+	measure '# Orders by Requested Date' =
+			CALCULATE(
+			    [# Orders],
+			    USERELATIONSHIP(Orders[Requested Date Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 07fa4b36-b698-4f81-9398-79a9f6ddca3b
+
 	/// Integer order key optimized for Direct Lake joins.
 	column 'Sales Order Key'
 		dataType: int64
@@ -52,6 +62,7 @@ table Orders
 	column 'Sales Order ID'
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 7ff5f782-60a3-48c6-820b-e30424c03259
 		summarizeBy: none
 		sourceColumn: sales_order_id
@@ -126,6 +137,7 @@ table Orders
 	column 'Order Revenue'
 		dataType: decimal
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 3a07360a-7b99-4704-9726-5a7dfa592eb5
 		summarizeBy: none
 		sourceColumn: order_revenue
@@ -134,6 +146,7 @@ table Orders
 	column 'Order Cost'
 		dataType: decimal
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: f16a476e-1e59-4fa7-9a92-ec324ecbfdeb
 		summarizeBy: none
 		sourceColumn: order_cost
@@ -142,9 +155,28 @@ table Orders
 	column 'Gross Margin Value'
 		dataType: decimal
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: db91da27-a840-4889-b689-7ab510e763a6
 		summarizeBy: none
 		sourceColumn: gross_margin
+
+	/// Integer date key for the order date relationship.
+	column 'Order Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 96783892-734a-4ffa-ad22-13dd00d65f5c
+		summarizeBy: none
+		sourceColumn: order_date_key
+
+	/// Integer date key for requested-date analysis.
+	column 'Requested Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: d26a61c2-3bd2-42f8-a849-220c1d87a8f2
+		summarizeBy: none
+		sourceColumn: requested_date_key
 
 	partition Orders = entity
 		mode: directLake
