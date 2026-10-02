@@ -38,10 +38,10 @@
 # Fabric pipeline parameters. Mark this cell as the parameter cell after import.
 SCALE = "small"  # small, medium, or large
 SEED = 20261001
-START_DATE = "2015-01-01"
-END_DATE = "2030-12-31"
+START_DATE = "2013-01-01"
+END_DATE = "2050-12-31"
 WRITE_MODE = "overwrite"
-OPTIMIZE_GOLD = False
+OPTIMIZE_GOLD = True
 
 
 # METADATA ********************
@@ -428,7 +428,9 @@ facility = (
     .withColumn("capacity_units", (hash_bucket("id", 5, 9000) + 1000).cast("long"))
     .withColumn("status", F.lit("Active"))
     .withColumn("created_on", F.lit("2018-01-01").cast("date"))
+    .withColumn("created_on_key", to_date_key("created_on"))
     .withColumn("modified_on", F.lit(END_DATE).cast("date"))
+    .withColumn("modified_on_key", to_date_key("modified_on"))
     .drop("id", "n")
 )
 
@@ -460,6 +462,8 @@ customer = (
     .withColumn("status", F.when(hash_bucket("id", 19, 20) == 0, "Inactive").otherwise("Active"))
     .withColumn("created_on", F.date_add(F.lit("2016-01-01").cast("date"), hash_bucket("id", 20, 2922)))
     .withColumn("modified_on", F.lit(END_DATE).cast("date"))
+    .withColumn("created_on_key", to_date_key("created_on"))
+    .withColumn("modified_on_key", to_date_key("modified_on"))
     .drop("id", "n")
 )
 
@@ -485,7 +489,9 @@ product = (
     .withColumn("critical_spare", hash_bucket("id", 36, 10) < 2)
     .withColumn("status", F.when(hash_bucket("id", 37, 25) == 0, "Discontinued").otherwise("Active"))
     .withColumn("created_on", F.date_add(F.lit("2018-01-01").cast("date"), hash_bucket("id", 38, 2191)))
+    .withColumn("created_on_key", to_date_key("created_on"))
     .withColumn("modified_on", F.lit(END_DATE).cast("date"))
+    .withColumn("modified_on_key", to_date_key("modified_on"))
     .drop("id", "n")
 )
 
@@ -506,9 +512,12 @@ supplier = (
     .withColumn("country_code", pick(COUNTRIES, hash_bucket("id", 42, len(COUNTRIES))))
     .withColumn("supplier_tier", pick(["Preferred", "Approved", "Conditional"], hash_bucket("id", 43, 3)))
     .withColumn("contract_start_date", F.date_add(F.lit("2019-01-01").cast("date"), hash_bucket("id", 44, 1826)))
+    .withColumn("contract_start_date_key", to_date_key("contract_start_date"))
     .withColumn("status", F.when(hash_bucket("id", 45, 20) == 0, "On Hold").otherwise("Active"))
     .withColumn("created_on", F.lit("2019-01-01").cast("date"))
+    .withColumn("created_on_key", to_date_key("created_on"))
     .withColumn("modified_on", F.lit(END_DATE).cast("date"))
+    .withColumn("modified_on_key", to_date_key("modified_on"))
     .drop("id", "n")
 )
 
@@ -529,9 +538,12 @@ employee = (
     .withColumn("facility_key", (hash_bucket("id", 54, N["facilities"]) + 1).cast("long"))
     .withColumn("facility_id", synthetic_id("FAC", F.col("facility_key"), 4))
     .withColumn("hire_date", F.date_add(F.lit("2015-01-01").cast("date"), hash_bucket("id", 55, 4018)))
+    .withColumn("hire_date_key", to_date_key("hire_date"))
     .withColumn("status", F.when(hash_bucket("id", 56, 30) == 0, "Leave").otherwise("Active"))
     .withColumn("created_on", F.col("hire_date"))
+    .withColumn("created_on_key", to_date_key("created_on"))
     .withColumn("modified_on", F.lit(END_DATE).cast("date"))
+    .withColumn("modified_on_key", to_date_key("modified_on"))
     .drop("id", "n")
 )
 
@@ -546,9 +558,12 @@ technician = (
     .withColumn("skill_level", pick(["Level 1", "Level 2", "Level 3", "Master"], hash_bucket("id", 62, 4)))
     .withColumn("specialty", pick(PRODUCT_FAMILIES, hash_bucket("id", 63, len(PRODUCT_FAMILIES))))
     .withColumn("certification_expiry", F.date_add(F.lit(END_DATE).cast("date"), hash_bucket("id", 64, 730) - 180))
+    .withColumn("certification_expiry_key", to_date_key("certification_expiry"))
     .withColumn("status", F.lit("Active"))
     .withColumn("created_on", F.lit("2020-01-01").cast("date"))
+    .withColumn("created_on_key", to_date_key("created_on"))
     .withColumn("modified_on", F.lit(END_DATE).cast("date"))
+    .withColumn("modified_on_key", to_date_key("modified_on"))
     .drop("id", "n")
 )
 
@@ -561,7 +576,6 @@ sales_channel = spark.createDataFrame(
     ],
     ["sales_channel_key", "sales_channel_id", "sales_channel_name", "channel_group"],
 ).withColumn("status", F.lit("Active"))
-
 
 # METADATA ********************
 
@@ -640,7 +654,8 @@ order_base = (
 
 order_line_seed = spark.range(N["order_lines"]).withColumn("n", F.col("id") + 1)
 order_line = (
-    order_line_seed.withColumn("sales_order_line_id", synthetic_id("SOL", F.col("n"), 11))
+    order_line_seed.withColumn("sales_order_line_key", F.col("n").cast("long"))
+    .withColumn("sales_order_line_id", synthetic_id("SOL", F.col("n"), 11))
     .withColumn("order_index", F.floor(F.col("id") * N["orders"] / N["order_lines"]).cast("long"))
     .withColumn("sales_order_key", (F.col("order_index") + 1).cast("long"))
     .withColumn("sales_order_id", synthetic_id("SO", F.col("sales_order_key"), 10))
@@ -661,6 +676,7 @@ order_line = (
     )
     .withColumn("line_cost", (F.col("quantity") * F.col("standard_cost")).cast("decimal(18,2)"))
     .select(
+        "sales_order_line_key",
         "sales_order_line_id",
         "sales_order_key",
         "sales_order_id",
@@ -702,7 +718,8 @@ sales_order = (
 
 supplier_product_seed = spark.range(N["products"] * 4).withColumn("n", F.col("id") + 1)
 supplier_product = (
-    supplier_product_seed.withColumn("supplier_product_id", synthetic_id("SP", F.col("n"), 9))
+    supplier_product_seed.withColumn("supplier_product_key", F.col("n").cast("long"))
+    .withColumn("supplier_product_id", synthetic_id("SP", F.col("n"), 9))
     .withColumn("product_index", F.floor(F.col("id") / 4).cast("long"))
     .withColumn("product_key", (F.col("product_index") + 1).cast("long"))
     .withColumn("product_id", synthetic_id("PRD", F.col("product_key"), 6))
@@ -716,7 +733,8 @@ supplier_product = (
 
 po_line_seed = spark.range(N["purchase_order_lines"]).withColumn("n", F.col("id") + 1)
 purchase_order_line = (
-    po_line_seed.withColumn("purchase_order_line_id", synthetic_id("POL", F.col("n"), 10))
+    po_line_seed.withColumn("purchase_order_line_key", F.col("n").cast("long"))
+    .withColumn("purchase_order_line_id", synthetic_id("POL", F.col("n"), 10))
     .withColumn("purchase_order_id", synthetic_id("PO", F.floor(F.col("id") / 3) + 1, 9))
     .withColumn("supplier_key", (hash_bucket("id", 110, N["suppliers"]) + 1).cast("long"))
     .withColumn("supplier_id", synthetic_id("SUP", F.col("supplier_key"), 5))
@@ -745,7 +763,8 @@ purchase_order_line = (
 
 shipment_seed = spark.range(N["shipments"]).withColumn("n", F.col("id") + 1)
 shipment = (
-    shipment_seed.withColumn("shipment_id", synthetic_id("SHP", F.col("n"), 10))
+    shipment_seed.withColumn("shipment_key", F.col("n").cast("long"))
+    .withColumn("shipment_id", synthetic_id("SHP", F.col("n"), 10))
     .withColumn("sales_order_key", (hash_bucket("id", 120, N["orders"]) + 1).cast("long"))
     .withColumn("sales_order_id", synthetic_id("SO", F.col("sales_order_key"), 10))
     .withColumn("facility_key", (hash_bucket("id", 121, N["facilities"]) + 1).cast("long"))
@@ -770,7 +789,8 @@ shipment = (
 
 inventory_seed = spark.range(N["inventory_snapshots"]).withColumn("n", F.col("id") + 1)
 inventory_snapshot = (
-    inventory_seed.withColumn("inventory_snapshot_id", synthetic_id("INV", F.col("n"), 12))
+    inventory_seed.withColumn("inventory_snapshot_key", F.col("n").cast("long"))
+    .withColumn("inventory_snapshot_id", synthetic_id("INV", F.col("n"), 12))
     .withColumn("snapshot_date", generated_date("id", 130))
     .withColumn("snapshot_date_key", to_date_key("snapshot_date"))
     .withColumn("facility_key", (hash_bucket("id", 131, N["facilities"]) + 1).cast("long"))
@@ -834,7 +854,8 @@ work_order = (
 
 work_order_part_seed = spark.range(N["work_order_parts"]).withColumn("n", F.col("id") + 1)
 work_order_part = (
-    work_order_part_seed.withColumn("work_order_part_id", synthetic_id("WOP", F.col("n"), 11))
+    work_order_part_seed.withColumn("work_order_part_key", F.col("n").cast("long"))
+    .withColumn("work_order_part_id", synthetic_id("WOP", F.col("n"), 11))
     .withColumn("work_order_key", (hash_bucket("id", 150, N["work_orders"]) + 1).cast("long"))
     .withColumn("work_order_id", synthetic_id("WO", F.col("work_order_key"), 10))
     .withColumn("product_key", (hash_bucket("id", 151, N["products"]) + 1).cast("long"))
@@ -847,7 +868,8 @@ work_order_part = (
 
 status_seed = spark.range(N["asset_daily_status"]).withColumn("n", F.col("id") + 1)
 asset_daily_status = (
-    status_seed.withColumn("asset_daily_status_id", synthetic_id("ADS", F.col("n"), 12))
+    status_seed.withColumn("asset_daily_status_key", F.col("n").cast("long"))
+    .withColumn("asset_daily_status_id", synthetic_id("ADS", F.col("n"), 12))
     .withColumn("asset_key", (hash_bucket("id", 160, N["assets"]) + 1).cast("long"))
     .withColumn("asset_id", synthetic_id("AST", F.col("asset_key"), 9))
     .withColumn("status_date", generated_date("id", 161))
@@ -982,9 +1004,146 @@ gold_map = {
     "fact_asset_daily_status": "asset_daily_status",
 }
 
+# 1. Publish Gold dimensions as 1:1 copies of Silver
 for gold_table, silver_table in gold_map.items():
-    write_delta(spark.table(f"silver.{silver_table}"), f"gold.{gold_table}")
-    print(f"Published gold.{gold_table}")
+    if gold_table.startswith("dim_"):
+        write_delta(spark.table(f"silver.{silver_table}"), f"gold.{gold_table}")
+        print(f"Published gold.{gold_table} from silver.{silver_table}")
+
+# 2. Commercial facts
+# 2.1 Fact sales order (already has conformed keys to Customer, Sales Channel, and Date)
+write_delta(spark.table("silver.sales_order"), "gold.fact_sales_order")
+print("Published gold.fact_sales_order from silver.sales_order")
+
+# 2.2 Fact sales order line
+# Enrich with conformed keys so filters don't have to traverse fact_sales_order
+# NOTE: Do NOT select sales_order_key from the order side to avoid duplicate column names.
+fact_sales_order_line = (
+    spark.table("silver.sales_order_line").alias("l")
+    .join(
+        spark.table("silver.sales_order")
+        .select(
+            "sales_order_id",  # join key
+            # conformed keys to bring down from the order header
+            "customer_key",
+            "sales_channel_key",
+            "order_date_key",
+            "requested_date_key",
+        )
+        .alias("o"),
+        on="sales_order_id",
+        how="left",
+    )
+)
+write_delta(fact_sales_order_line, "gold.fact_sales_order_line")
+print("Published gold.fact_sales_order_line enriched with customer/sales channel/date keys")
+
+# 2.3 Fact shipment
+# Enrich with order-level conformed keys to avoid chaining through fact_sales_order
+# NOTE: Do NOT select sales_order_key from the order side to avoid duplicate column names.
+fact_shipment = (
+    spark.table("silver.shipment").alias("s")
+    .join(
+        spark.table("silver.sales_order")
+        .select(
+            "sales_order_key",  # join key (present only once in the projection)
+            "customer_key",
+            "sales_channel_key",
+            "order_date_key",
+            "requested_date_key",
+        )
+        .alias("o"),
+        on="sales_order_key",
+        how="left",
+    )
+)
+write_delta(fact_shipment, "gold.fact_shipment")
+print("Published gold.fact_shipment enriched with customer/sales channel/date keys")
+
+# 3. Supply-chain facts that already carry conformed keys
+write_delta(spark.table("silver.supplier_product"), "gold.bridge_supplier_product")
+print("Published gold.bridge_supplier_product from silver.supplier_product")
+
+# 3.1 Fact purchase order line with purchased_value
+fact_purchase_order_line = (
+    spark.table("silver.purchase_order_line")
+    .withColumn(
+        "purchased_value",
+        (F.col("ordered_quantity") * F.col("unit_cost")).cast("decimal(18,2)"),
+    )
+)
+write_delta(fact_purchase_order_line, "gold.fact_purchase_order_line")
+print("Published gold.fact_purchase_order_line with purchased_value")
+
+# 3.2 Fact inventory snapshot with inventory_value based on product standard_cost
+fact_inventory_snapshot = (
+    spark.table("silver.inventory_snapshot").alias("i")
+    .join(
+        spark.table("silver.product").select("product_key", "standard_cost").alias("p"),
+        on="product_key",
+        how="left",
+    )
+    .withColumn(
+        "inventory_value",
+        (F.col("quantity_on_hand") * F.col("standard_cost")).cast("decimal(18,2)"),
+    )
+)
+write_delta(fact_inventory_snapshot, "gold.fact_inventory_snapshot")
+print("Published gold.fact_inventory_snapshot with inventory_value")
+
+# 4. Service and asset operations facts
+# 4.1 Fact work order
+# Enrich with asset-level conformed keys (customer, facility) for flatter access paths
+fact_work_order = (
+    spark.table("silver.work_order").alias("w")
+    .join(
+        spark.table("silver.asset")
+        .select("asset_key", "customer_key", "facility_key")
+        .alias("a"),
+        on="asset_key",
+        how="left",
+    )
+)
+write_delta(fact_work_order, "gold.fact_work_order")
+print("Published gold.fact_work_order enriched with asset customer/facility keys")
+
+# 4.2 Fact work order part
+# Enrich with work-order-level and asset-level keys so filters don't have to chain through fact_work_order
+fact_work_order_part = (
+    spark.table("silver.work_order_part").alias("p")
+    .join(
+        fact_work_order.select(
+            "work_order_key",
+            "asset_key",
+            "technician_key",
+            "opened_date_key",
+            "resolved_date_key",
+            "customer_key",
+            "facility_key",
+        ).alias("w"),
+        on="work_order_key",
+        how="left",
+    )
+)
+write_delta(fact_work_order_part, "gold.fact_work_order_part")
+print(
+    "Published gold.fact_work_order_part enriched with asset/technician/customer/facility/date keys"
+)
+
+# 4.3 Fact asset daily status
+# Enrich with asset customer/facility keys to avoid chaining through dim_asset
+fact_asset_daily_status = (
+    spark.table("silver.asset_daily_status").alias("s")
+    .join(
+        spark.table("silver.asset")
+        .select("asset_key", "customer_key", "facility_key")
+        .alias("a"),
+        on="asset_key",
+        how="left",
+    )
+)
+write_delta(fact_asset_daily_status, "gold.fact_asset_daily_status")
+print("Published gold.fact_asset_daily_status enriched with asset customer/facility keys")
 
 
 # METADATA ********************
