@@ -15,10 +15,50 @@ table Asset
 		lineageTag: 0eeee41a-12c9-4ead-bde5-3c08fb911487
 
 	/// Number of assets currently out of service.
-	measure '# Assets Out of Service' = CALCULATE(COUNTROWS(Asset), KEEPFILTERS(Asset[Status] = "Out of Service"))
+	measure '# Assets Out of Service' = CALCULATE(COUNTROWS(Asset), KEEPFILTERS(Asset[Asset Status] = "Out of Service"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
 		lineageTag: ed126dcf-e9d0-45ef-84e2-2dd338aae555
+
+	/// Number of assets by their installation date.
+	measure '# Assets Installed' =
+			CALCULATE(
+			    COUNTROWS(Asset),
+			    USERELATIONSHIP(Asset[Install Date Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: f4f86d43-c3a8-4af1-940d-8f0d66e8ec5e
+
+	/// Number of asset warranties by their expiration date.
+	measure '# Asset Warranties Expiring' =
+			CALCULATE(
+			    COUNTROWS(Asset),
+			    USERELATIONSHIP(Asset[Warranty Expiry Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 7b787c7f-6f21-43b8-aa60-a31c5d85357c
+
+	/// Number of asset records by their creation date.
+	measure '# Assets Created' =
+			CALCULATE(
+			    COUNTROWS(Asset),
+			    USERELATIONSHIP(Asset[Created On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: aac27743-1443-46a4-add3-5d17225b50ce
+
+	/// Number of asset records by their most recent modification date.
+	measure '# Assets Modified' =
+			CALCULATE(
+			    COUNTROWS(Asset),
+			    USERELATIONSHIP(Asset[Modified On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: e6fc204b-f7f2-4df2-a823-d3df1759f605
 
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Asset Key'
@@ -32,10 +72,11 @@ table Asset
 	/// Stable installed-asset identifier.
 	column 'Asset ID'
 		dataType: string
-		isHidden
 		lineageTag: 2e0f68e0-1a81-4212-ba19-c174cace76d5
 		summarizeBy: none
 		sourceColumn: asset_id
+
+		changedProperty = IsHidden
 
 	/// Manufacturer serial number for an installed asset.
 	column 'Serial Number'
@@ -129,7 +170,7 @@ table Asset
 		sourceColumn: criticality
 
 	/// Current operational status.
-	column Status
+	column 'Asset Status'
 		dataType: string
 		lineageTag: 59185906-a316-43dd-8118-04bf2b2b7716
 		summarizeBy: none
@@ -150,6 +191,42 @@ table Asset
 		lineageTag: 547a08ea-1bb8-4164-9673-67b679faa3e5
 		summarizeBy: none
 		sourceColumn: modified_on
+
+	/// Integer date key for asset installation-date analysis.
+	column 'Install Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 2d1b2cb1-69a3-461d-a94e-be47aa9cbaa7
+		summarizeBy: none
+		sourceColumn: install_date_key
+
+	/// Integer date key for warranty-expiry analysis.
+	column 'Warranty Expiry Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 9308d695-9743-4d56-9834-37ec4b742727
+		summarizeBy: none
+		sourceColumn: warranty_expiry_key
+
+	/// Integer date key for asset creation-date analysis.
+	column 'Created On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: d703fe50-1237-44e6-a85f-8cad46508208
+		summarizeBy: none
+		sourceColumn: created_on_key
+
+	/// Integer date key for asset modification-date analysis.
+	column 'Modified On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 5be2e9fe-515e-4ffc-addc-fd9f16296046
+		summarizeBy: none
+		sourceColumn: modified_on_key
 
 	partition Asset = entity
 		mode: directLake

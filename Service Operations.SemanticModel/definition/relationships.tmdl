@@ -2,22 +2,6 @@ relationship 'Technician to Employee'
 	fromColumn: Technician.'Employee Key'
 	toColumn: Employee.'Employee Key'
 
-relationship 'Asset to Customer'
-	fromColumn: Asset.'Customer Key'
-	toColumn: Customer.'Customer Key'
-
-relationship 'Asset to Product'
-	fromColumn: Asset.'Product Key'
-	toColumn: Product.'Product Key'
-
-relationship 'Asset to Facility'
-	fromColumn: Asset.'Facility Key'
-	toColumn: Facility.'Facility Key'
-
-relationship 'Work Orders to Date'
-	fromColumn: 'Work Orders'.'Opened Date'
-	toColumn: Date.Date
-
 relationship 'Work Orders to Asset'
 	fromColumn: 'Work Orders'.'Asset Key'
 	toColumn: Asset.'Asset Key'
@@ -26,19 +10,157 @@ relationship 'Work Orders to Technician'
 	fromColumn: 'Work Orders'.'Technician Key'
 	toColumn: Technician.'Technician Key'
 
-relationship 'Work Order Parts to Work Orders'
-	fromColumn: 'Work Order Parts'.'Work Order Key'
-	toColumn: 'Work Orders'.'Work Order Key'
-
 relationship 'Work Order Parts to Part Product'
 	fromColumn: 'Work Order Parts'.'Product Key'
 	toColumn: 'Part Product'.'Product Key'
 
-relationship 'Asset Daily Status to Date'
-	fromColumn: 'Asset Daily Status'.'Status Date'
-	toColumn: Date.Date
-
 relationship 'Asset Daily Status to Asset'
 	fromColumn: 'Asset Daily Status'.'Asset Key'
 	toColumn: Asset.'Asset Key'
+
+relationship 'Work Orders to Date'
+	fromColumn: 'Work Orders'.'Opened Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Work Orders Resolved Date to Date'
+	isActive: false
+	fromColumn: 'Work Orders'.'Resolved Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Asset Daily Status to Date'
+	fromColumn: 'Asset Daily Status'.'Status Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Work Orders to Customer'
+	fromColumn: 'Work Orders'.'Customer Key'
+	toColumn: Customer.'Customer Key'
+
+relationship 'Work Orders to Facility'
+	fromColumn: 'Work Orders'.'Facility Key'
+	toColumn: Facility.'Facility Key'
+
+relationship 'Work Orders to Product'
+	fromColumn: 'Work Orders'.'Product Key'
+	toColumn: Product.'Product Key'
+
+relationship 'Work Order Parts to Asset'
+	fromColumn: 'Work Order Parts'.'Asset Key'
+	toColumn: Asset.'Asset Key'
+
+relationship 'Work Order Parts to Technician'
+	fromColumn: 'Work Order Parts'.'Technician Key'
+	toColumn: Technician.'Technician Key'
+
+relationship 'Work Order Parts to Customer'
+	fromColumn: 'Work Order Parts'.'Customer Key'
+	toColumn: Customer.'Customer Key'
+
+relationship 'Work Order Parts to Facility'
+	fromColumn: 'Work Order Parts'.'Facility Key'
+	toColumn: Facility.'Facility Key'
+
+relationship 'Work Order Parts to Product'
+	fromColumn: 'Work Order Parts'.'Asset Product Key'
+	toColumn: Product.'Product Key'
+
+relationship 'Work Order Parts Opened Date to Date'
+	fromColumn: 'Work Order Parts'.'Opened Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Work Order Parts Resolved Date to Date'
+	isActive: false
+	fromColumn: 'Work Order Parts'.'Resolved Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Asset Daily Status to Customer'
+	fromColumn: 'Asset Daily Status'.'Customer Key'
+	toColumn: Customer.'Customer Key'
+
+relationship 'Asset Daily Status to Facility'
+	fromColumn: 'Asset Daily Status'.'Facility Key'
+	toColumn: Facility.'Facility Key'
+
+relationship 'Asset Daily Status to Product'
+	fromColumn: 'Asset Daily Status'.'Product Key'
+	toColumn: Product.'Product Key'
+
+relationship 'Customer Created On Key to Date'
+	isActive: false
+	fromColumn: Customer.'Created On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Customer Modified On Key to Date'
+	isActive: false
+	fromColumn: Customer.'Modified On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Product Created On to Date'
+	isActive: false
+	fromColumn: Product.'Created On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Product Modified On to Date'
+	isActive: false
+	fromColumn: Product.'Modified On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Facility Created On to Date'
+	isActive: false
+	fromColumn: Facility.'Created On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Facility Modified On to Date'
+	isActive: false
+	fromColumn: Facility.'Modified On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Employee Hire Date Key to Date'
+	isActive: false
+	fromColumn: Employee.'Hire Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Employee Created On to Date'
+	isActive: false
+	fromColumn: Employee.'Created On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Employee Modified On to Date'
+	isActive: false
+	fromColumn: Employee.'Modified On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Technician Certification Expiry Key to Date'
+	isActive: false
+	fromColumn: Technician.'Certification Expiry Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Technician Created On to Date'
+	isActive: false
+	fromColumn: Technician.'Created On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Technician Modified On to Date'
+	isActive: false
+	fromColumn: Technician.'Modified On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Asset Install Date Key to Date'
+	isActive: false
+	fromColumn: Asset.'Install Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Asset Warranty Expiry Key to Date'
+	isActive: false
+	fromColumn: Asset.'Warranty Expiry Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Asset Created On Key to Date'
+	isActive: false
+	fromColumn: Asset.'Created On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Asset Modified On Key to Date'
+	isActive: false
+	fromColumn: Asset.'Modified On Key'
+	toColumn: Date.'Date Key'
 

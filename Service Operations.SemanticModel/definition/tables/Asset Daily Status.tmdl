@@ -59,11 +59,12 @@ table 'Asset Daily Status'
 	/// Asset relationship key.
 	column 'Asset ID'
 		dataType: string
-		isHidden
 		isAvailableInMdx: false
 		lineageTag: 875e03c5-6e57-4bdf-9305-711eb55815c7
 		summarizeBy: none
 		sourceColumn: asset_id
+
+		changedProperty = IsHidden
 
 	/// Date on which the asset condition was observed.
 	column 'Status Date'
@@ -77,6 +78,7 @@ table 'Asset Daily Status'
 	column 'Operating Hours Value'
 		dataType: decimal
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 8d8165d9-9df2-4cb8-a755-d4d42193ed92
 		summarizeBy: none
 		sourceColumn: operating_hours
@@ -85,6 +87,7 @@ table 'Asset Daily Status'
 	column 'Downtime Hours Value'
 		dataType: decimal
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 6ea5b684-113f-4867-a4b1-9d939c6742e1
 		summarizeBy: none
 		sourceColumn: downtime_hours
@@ -93,6 +96,7 @@ table 'Asset Daily Status'
 	column 'Health Score'
 		dataType: decimal
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 9e6f82a6-2e76-417f-a727-21a7148af08b
 		summarizeBy: none
 		sourceColumn: health_score
@@ -101,6 +105,7 @@ table 'Asset Daily Status'
 	column 'Temperature Celsius'
 		dataType: decimal
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 13d92ed6-a4be-4b81-8630-30052d77aa24
 		summarizeBy: none
 		sourceColumn: temperature_c
@@ -109,9 +114,46 @@ table 'Asset Daily Status'
 	column 'Alert Count'
 		dataType: int64
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 115a79ef-85d7-4285-9da8-e3c3c025ac45
 		summarizeBy: none
 		sourceColumn: alert_count
+
+	/// Integer date key for the status-date relationship.
+	column 'Status Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 65076cf3-5ba2-4327-8b00-b310bb2a9143
+		summarizeBy: none
+		sourceColumn: status_date_key
+
+	/// Integer customer key for direct asset-status analysis.
+	column 'Customer Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 0b3a51b0-54be-4096-bf62-f58a09270031
+		summarizeBy: none
+		sourceColumn: customer_key
+
+	/// Integer facility key for direct asset-status analysis.
+	column 'Facility Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 889c0961-fe17-44e8-9087-818a144bc5f0
+		summarizeBy: none
+		sourceColumn: facility_key
+
+	/// Integer serviced-product key for direct asset-status analysis.
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 04a3ce33-6c0e-4537-8c80-33ba251d1db6
+		summarizeBy: none
+		sourceColumn: product_key
 
 	partition 'Asset Daily Status' = entity
 		mode: directLake

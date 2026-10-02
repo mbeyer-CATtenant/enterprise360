@@ -3,10 +3,30 @@ table Customer
 	lineageTag: a00cc685-4e05-4bff-a021-fc62b18d058b
 
 	/// Number of customers currently marked active.
-	measure '# Active Customers' = CALCULATE(COUNTROWS(Customer), KEEPFILTERS(Customer[Status] = "Active"))
+	measure '# Active Customers' = CALCULATE(COUNTROWS(Customer), KEEPFILTERS(Customer[Customer Status] = "Active"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
 		lineageTag: 1fa6243b-11a1-44fd-8fa2-74c9f452a467
+
+	/// Number of customer records by their creation date.
+	measure '# Customers Created' =
+			CALCULATE(
+			    COUNTROWS(Customer),
+			    USERELATIONSHIP(Customer[Created On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 13be77cd-9f68-46ad-a0c2-235618d5eb8d
+
+	/// Number of customer records by their most recent modification date.
+	measure '# Customers Modified' =
+			CALCULATE(
+			    COUNTROWS(Customer),
+			    USERELATIONSHIP(Customer[Modified On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 2c872ef8-febc-4cfe-994c-de76419fff2e
 
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Customer Key'
@@ -20,10 +40,11 @@ table Customer
 	/// Stable customer identifier used by model relationships.
 	column 'Customer ID'
 		dataType: string
-		isHidden
 		lineageTag: dafb7711-8a96-4df1-b066-36084b9dff47
 		summarizeBy: none
 		sourceColumn: customer_id
+
+		changedProperty = IsHidden
 
 	/// Customer organization name.
 	column 'Customer Name'
@@ -85,7 +106,7 @@ table Customer
 		sourceColumn: risk_tier
 
 	/// Current customer lifecycle status.
-	column Status
+	column 'Customer Status'
 		dataType: string
 		lineageTag: 41530de4-0771-496d-936b-796a0abcff95
 		summarizeBy: none
@@ -106,6 +127,24 @@ table Customer
 		lineageTag: c9cc9def-62e8-4c6d-9ecc-2a4487d6f418
 		summarizeBy: none
 		sourceColumn: modified_on
+
+	/// Integer date key for customer creation-date analysis.
+	column 'Created On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 8cb905cf-3b86-4d8e-8c1c-0cefee2720b3
+		summarizeBy: none
+		sourceColumn: created_on_key
+
+	/// Integer date key for customer modification-date analysis.
+	column 'Modified On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: eb423bf3-9fd3-4552-ae42-556a32ad672a
+		summarizeBy: none
+		sourceColumn: modified_on_key
 
 	partition Customer = entity
 		mode: directLake

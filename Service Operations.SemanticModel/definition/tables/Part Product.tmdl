@@ -15,6 +15,7 @@ table 'Part Product'
 	column 'Product ID'
 		dataType: string
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 23f317a2-81db-4bbc-95c6-12245e71023e
 		summarizeBy: none
 		sourceColumn: product_id
@@ -63,7 +64,7 @@ table 'Part Product'
 		sourceColumn: critical_spare
 
 	/// Current product lifecycle status.
-	column Status
+	column 'Part Product Status'
 		dataType: string
 		lineageTag: 59c28365-9625-457c-9392-7d779feb4b5c
 		summarizeBy: none

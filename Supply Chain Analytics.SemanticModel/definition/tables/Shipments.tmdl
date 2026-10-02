@@ -48,6 +48,46 @@ table Shipments
 		displayFolder: Measures\Rates
 		lineageTag: 18084961-008f-4580-b87d-ffb4f78758f4
 
+	/// Number of shipments by their promised delivery date.
+	measure '# Shipments by Promised Delivery Date' =
+			CALCULATE(
+			    [# Shipments],
+			    USERELATIONSHIP(Shipments[Promised Delivery Date Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: f19c7675-fe8d-4c54-bf5d-2d6e7e424b2b
+
+	/// Number of shipments by their actual delivery date.
+	measure '# Shipments by Actual Delivery Date' =
+			CALCULATE(
+			    [# Shipments],
+			    USERELATIONSHIP(Shipments[Actual Delivery Date Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 4c7eec28-78e4-4d44-b058-d7a74e35da35
+
+	/// Number of shipments analyzed by the associated customer order date.
+	measure '# Shipments by Order Date' =
+			CALCULATE(
+			    [# Shipments],
+			    USERELATIONSHIP(Shipments[Order Date Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 780b3031-5d27-4559-956a-1d2928caed17
+
+	/// Number of shipments analyzed by the requested fulfillment date.
+	measure '# Shipments by Requested Date' =
+			CALCULATE(
+			    [# Shipments],
+			    USERELATIONSHIP(Shipments[Requested Date Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 959a8a7a-b502-47b5-b3e8-795c1befc76f
+
 	/// Stable shipment identifier.
 	column 'Shipment ID'
 		dataType: string
@@ -117,6 +157,7 @@ table Shipments
 	column 'Freight Cost Value'
 		dataType: decimal
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 473f003a-006d-4bbc-999c-005e72906484
 		summarizeBy: none
 		sourceColumn: freight_cost
@@ -134,6 +175,69 @@ table Shipments
 		lineageTag: bb5fade1-c82f-4646-96ae-9bbd5f6c204f
 		summarizeBy: none
 		sourceColumn: shipment_status
+
+	/// Integer date key for the shipment-date relationship.
+	column 'Ship Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: fe19a152-beb3-40e2-b1c4-a7b53e54edd1
+		summarizeBy: none
+		sourceColumn: ship_date_key
+
+	/// Integer date key for promised delivery-date analysis.
+	column 'Promised Delivery Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 1e87992a-1949-4626-9fd2-90f5b764cec8
+		summarizeBy: none
+		sourceColumn: promised_delivery_date_key
+
+	/// Integer date key for actual delivery-date analysis.
+	column 'Actual Delivery Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: f822ee80-7477-4e06-b057-b9c6174f0152
+		summarizeBy: none
+		sourceColumn: actual_delivery_date_key
+
+	/// Integer customer key for direct shipment analysis.
+	column 'Customer Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: f02454ca-268e-4936-bf39-06d15ad99ab1
+		summarizeBy: none
+		sourceColumn: customer_key
+
+	/// Integer sales-channel key for direct shipment analysis.
+	column 'Sales Channel Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 06c2e79c-a2ab-4550-91ca-8cd49e9535fa
+		summarizeBy: none
+		sourceColumn: sales_channel_key
+
+	/// Integer key for the order date associated with the shipment.
+	column 'Order Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: abcd7fbe-93b3-4b66-ba97-7726c5ae16c6
+		summarizeBy: none
+		sourceColumn: order_date_key
+
+	/// Integer key for the requested fulfillment date associated with the shipment.
+	column 'Requested Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 53ae1e8c-60af-41b3-af12-aa1f848b9b2c
+		summarizeBy: none
+		sourceColumn: requested_date_key
 
 	partition Shipments = entity
 		mode: directLake

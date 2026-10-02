@@ -1,7 +1,3 @@
-relationship 'Purchase Orders to Date'
-	fromColumn: 'Purchase Orders'.'Order Date'
-	toColumn: Date.Date
-
 relationship 'Purchase Orders to Supplier'
 	fromColumn: 'Purchase Orders'.'Supplier Key'
 	toColumn: Supplier.'Supplier Key'
@@ -14,17 +10,9 @@ relationship 'Purchase Orders to Facility'
 	fromColumn: 'Purchase Orders'.'Facility Key'
 	toColumn: Facility.'Facility Key'
 
-relationship 'Shipments to Date'
-	fromColumn: Shipments.'Ship Date'
-	toColumn: Date.Date
-
 relationship 'Shipments to Facility'
 	fromColumn: Shipments.'Facility Key'
 	toColumn: Facility.'Facility Key'
-
-relationship 'Inventory to Date'
-	fromColumn: Inventory.'Snapshot Date'
-	toColumn: Date.Date
 
 relationship 'Inventory to Product'
 	fromColumn: Inventory.'Product Key'
@@ -41,4 +29,99 @@ relationship 'Supplier Products to Supplier'
 relationship 'Supplier Products to Product'
 	fromColumn: 'Supplier Products'.'Product Key'
 	toColumn: Product.'Product Key'
+
+relationship 'Purchase Orders to Date'
+	fromColumn: 'Purchase Orders'.'Order Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Shipments to Date'
+	fromColumn: Shipments.'Ship Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Inventory to Date'
+	fromColumn: Inventory.'Snapshot Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Purchase Orders Expected Date to Date'
+	isActive: false
+	fromColumn: 'Purchase Orders'.'Expected Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Purchase Orders Received Date to Date'
+	isActive: false
+	fromColumn: 'Purchase Orders'.'Received Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Shipments Promised Delivery Date to Date'
+	isActive: false
+	fromColumn: Shipments.'Promised Delivery Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Shipments Actual Delivery Date to Date'
+	isActive: false
+	fromColumn: Shipments.'Actual Delivery Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Shipments to Customer'
+	fromColumn: Shipments.'Customer Key'
+	toColumn: Customer.'Customer Key'
+
+relationship 'Shipments to Sales Channel'
+	fromColumn: Shipments.'Sales Channel Key'
+	toColumn: 'Sales Channel'.'Sales Channel Key'
+
+relationship 'Shipments Order Date to Date'
+	isActive: false
+	fromColumn: Shipments.'Order Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Shipments Requested Date to Date'
+	isActive: false
+	fromColumn: Shipments.'Requested Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Customer Created On to Date'
+	isActive: false
+	fromColumn: Customer.'Created On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Customer Modified On to Date'
+	isActive: false
+	fromColumn: Customer.'Modified On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Product Created On to Date'
+	isActive: false
+	fromColumn: Product.'Created On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Product Modified On to Date'
+	isActive: false
+	fromColumn: Product.'Modified On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Supplier Contract Start Date to Date'
+	isActive: false
+	fromColumn: Supplier.'Contract Start Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Supplier Created On to Date'
+	isActive: false
+	fromColumn: Supplier.'Created On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Supplier Modified On to Date'
+	isActive: false
+	fromColumn: Supplier.'Modified On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Facility Created On to Date'
+	isActive: false
+	fromColumn: Facility.'Created On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Facility Modified On to Date'
+	isActive: false
+	fromColumn: Facility.'Modified On Key'
+	toColumn: Date.'Date Key'
 

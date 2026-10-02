@@ -1,12 +1,12 @@
-/// Organizations purchasing products and services from the enterprise.
+/// Organizations receiving shipments from the enterprise.
 table Customer
-	lineageTag: 2bcf2a0a-bab3-4075-b631-4fc9b4e91a28
+	lineageTag: 7ed9c7cc-e4aa-4d8d-9931-775a2c0f8a2e
 
 	/// Number of customers currently marked active.
 	measure '# Active Customers' = CALCULATE(COUNTROWS(Customer), KEEPFILTERS(Customer[Customer Status] = "Active"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
-		lineageTag: 21d514e4-ccf4-4243-b30b-c93e8bbab51c
+		lineageTag: 9a94c7e3-c8d4-4c36-8d7f-8cdecc607771
 
 	/// Number of customer records by their creation date.
 	measure '# Customers Created' =
@@ -16,7 +16,7 @@ table Customer
 			)
 		formatString: #,##0
 		displayFolder: Measures\Date Roles
-		lineageTag: 292a57a9-5840-4b8d-a611-c1de7908998b
+		lineageTag: 1618662a-96ef-4790-89ab-5b6862060747
 
 	/// Number of customer records by their most recent modification date.
 	measure '# Customers Modified' =
@@ -26,58 +26,58 @@ table Customer
 			)
 		formatString: #,##0
 		displayFolder: Measures\Date Roles
-		lineageTag: e897b2d1-7099-4af1-a445-b56b9a894ffe
+		lineageTag: 2fb784da-1022-4d43-a272-bd2c27b87435
 
-	/// Integer relationship key optimized for Direct Lake joins.
+	/// Integer customer relationship key.
 	column 'Customer Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
-		lineageTag: 2108a83b-75e3-4068-8a21-71fc918a3483
+		lineageTag: c5632388-106b-4752-9c60-8aa7f4b1b32e
 		summarizeBy: none
 		sourceColumn: customer_key
 
-	/// Stable customer identifier used by model relationships.
+	/// Stable customer identifier.
 	column 'Customer ID'
 		dataType: string
 		isHidden
 		isAvailableInMdx: false
-		lineageTag: 59f410c6-280c-4768-b96c-7b8fb55ee84d
+		lineageTag: c8b7c677-47ed-43fb-9937-52bdf47dd7b6
 		summarizeBy: none
 		sourceColumn: customer_id
 
 	/// Customer organization name.
 	column 'Customer Name'
 		dataType: string
-		lineageTag: c8442fa5-eda8-497d-8a9f-9f8ad0125f1a
+		lineageTag: 30a8ca0c-d084-498c-8247-047c88ced86a
 		summarizeBy: none
 		sourceColumn: customer_name
 
 	/// Commercial segment assigned to the customer.
 	column 'Customer Segment'
 		dataType: string
-		lineageTag: 0014eb68-b66b-46bd-9f4c-6eecc75a82eb
+		lineageTag: 4290dbe8-62da-4ae9-8a86-66a958631ba4
 		summarizeBy: none
 		sourceColumn: customer_segment
 
 	/// Primary industry in which the customer operates.
 	column Industry
 		dataType: string
-		lineageTag: e402d3d4-a081-4bff-882c-83fd560f2c08
+		lineageTag: 79d242f2-583c-42f5-baea-1fd7daa05202
 		summarizeBy: none
 		sourceColumn: industry
 
 	/// Enterprise operating region assigned to the customer.
 	column Region
 		dataType: string
-		lineageTag: 76598365-df67-497e-a68e-f02c37ca89b7
+		lineageTag: 89fcaae4-46c2-46ff-842d-3052dc621c88
 		summarizeBy: none
 		sourceColumn: region_code
 
-	/// Two-letter country code for the customer.
+	/// Two-letter customer country code.
 	column Country
 		dataType: string
-		lineageTag: 6ea90577-5eb6-4839-85d6-11d0bd710efb
+		lineageTag: 7b7e47e2-287d-41f5-b313-94fc29ccbf07
 		dataCategory: Country
 		summarizeBy: none
 		sourceColumn: country_code
@@ -85,66 +85,64 @@ table Customer
 	/// Customer city used for geographic analysis.
 	column City
 		dataType: string
-		lineageTag: 4dc431b2-6883-4ed8-97e6-a48a19399def
+		lineageTag: 2e265b61-d327-402d-b6dc-fb7e521b24b1
 		dataCategory: City
 		summarizeBy: none
 		sourceColumn: city
 
-	/// Synthetic annual revenue used to classify account size.
+	/// Annual revenue used to classify account size.
 	column 'Annual Revenue'
 		dataType: decimal
 		formatString: $#,##0.00
-		lineageTag: a557a96a-a6db-4e55-aae3-e1b34d2ff9b3
+		lineageTag: 741e7a8f-0c8c-4a62-a51b-c051f5100898
 		summarizeBy: none
 		sourceColumn: annual_revenue
 
 	/// Current commercial risk classification.
 	column 'Risk Tier'
 		dataType: string
-		lineageTag: ac77e207-62e7-4f37-927f-fd2401e3ea0c
+		lineageTag: cf5cbb58-f697-4444-b077-d8b17703c48c
 		summarizeBy: none
 		sourceColumn: risk_tier
 
 	/// Current customer lifecycle status.
 	column 'Customer Status'
 		dataType: string
-		lineageTag: 49e0c9e2-a7bf-4f77-abab-349574d91302
+		lineageTag: 3f753ac0-5d57-4324-a0a1-a39503565c92
 		summarizeBy: none
 		sourceColumn: status
-
-		changedProperty = Name
 
 	/// Date on which the customer record was created.
 	column 'Created On'
 		dataType: dateTime
 		formatString: Short Date
-		lineageTag: aba8e12e-e415-4334-be81-7eded6ed49ab
+		lineageTag: 843f2604-ec2a-49a2-a30c-e2385ad4f27b
 		summarizeBy: none
 		sourceColumn: created_on
-
-	/// Date on which the customer record was last modified.
-	column 'Modified On'
-		dataType: dateTime
-		formatString: Short Date
-		lineageTag: 804f0891-c030-4a83-92f1-755f991b9b3c
-		summarizeBy: none
-		sourceColumn: modified_on
 
 	/// Integer date key for customer creation-date analysis.
 	column 'Created On Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
-		lineageTag: 9f946327-049e-43d2-a7d6-1b405c8e4326
+		lineageTag: 2ad6ff57-91f1-4132-95b7-6ba5ded9862d
 		summarizeBy: none
 		sourceColumn: created_on_key
+
+	/// Date on which the customer record was last modified.
+	column 'Modified On'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 5856a501-d389-42eb-9be8-fe25523a4ead
+		summarizeBy: none
+		sourceColumn: modified_on
 
 	/// Integer date key for customer modification-date analysis.
 	column 'Modified On Key'
 		dataType: int64
 		isHidden
 		isAvailableInMdx: false
-		lineageTag: fba039de-fbda-4035-9257-24d7a8bb7f41
+		lineageTag: ee230181-05fc-4a92-b1e0-1769431eff8d
 		summarizeBy: none
 		sourceColumn: modified_on_key
 

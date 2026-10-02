@@ -20,6 +20,16 @@ table 'Work Order Parts'
 		displayFolder: Measures\Counts
 		lineageTag: 96820d13-3c05-488b-8852-972f126693db
 
+	/// Number of work-order part lines analyzed by the associated work order resolution date.
+	measure '# Work Order Part Lines by Resolved Date' =
+			CALCULATE(
+			    [# Work Order Part Lines],
+			    USERELATIONSHIP('Work Order Parts'[Resolved Date Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: f3e370a9-11b7-4ec4-a015-a2ad43397d46
+
 	/// Stable work-order-part identifier.
 	column 'Work Order Part ID'
 		dataType: string
@@ -41,11 +51,12 @@ table 'Work Order Parts'
 	/// Work-order relationship key.
 	column 'Work Order ID'
 		dataType: string
-		isHidden
 		isAvailableInMdx: false
 		lineageTag: 669810a2-babd-4e56-bee9-8ef00d8e3827
 		summarizeBy: none
 		sourceColumn: work_order_id
+
+		changedProperty = IsHidden
 
 	/// Integer replacement-product relationship key.
 	column 'Product Key'
@@ -69,6 +80,7 @@ table 'Work Order Parts'
 	column 'Quantity Used'
 		dataType: int64
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 3204f682-bf6f-45ef-b0d1-bbc6a5a163a4
 		summarizeBy: none
 		sourceColumn: quantity_used
@@ -77,9 +89,73 @@ table 'Work Order Parts'
 	column 'Part Cost Value'
 		dataType: decimal
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 6bdb8e1f-3746-468a-b361-3ec1e1200568
 		summarizeBy: none
 		sourceColumn: part_cost
+
+	/// Integer serviced-asset key for part-consumption analysis.
+	column 'Asset Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 7c87fe4d-df64-4d8d-b2a1-2da9826820d4
+		summarizeBy: none
+		sourceColumn: asset_key
+
+	/// Integer technician key for part-consumption analysis.
+	column 'Technician Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 51a1b958-79cc-46a1-a693-c2dc3f7032c2
+		summarizeBy: none
+		sourceColumn: technician_key
+
+	/// Integer customer key for part-consumption analysis.
+	column 'Customer Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: d0efcc09-62de-462f-a3a2-f8106e2d26f8
+		summarizeBy: none
+		sourceColumn: customer_key
+
+	/// Integer facility key for part-consumption analysis.
+	column 'Facility Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: fa91ae2c-041f-4961-b282-261fd0f54e24
+		summarizeBy: none
+		sourceColumn: facility_key
+
+	/// Integer key for the product associated with the serviced asset.
+	column 'Asset Product Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 90f51244-5971-4569-b294-f40e3e3b789d
+		summarizeBy: none
+		sourceColumn: asset_product_key
+
+	/// Integer date key for work-order-part opened-date analysis.
+	column 'Opened Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 648aea9a-c556-479a-b871-2f193d8dd290
+		summarizeBy: none
+		sourceColumn: opened_date_key
+
+	/// Integer date key for work-order-part resolved-date analysis.
+	column 'Resolved Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 80791f85-c657-4c9f-885a-5cd170885b5c
+		summarizeBy: none
+		sourceColumn: resolved_date_key
 
 	partition 'Work Order Parts' = entity
 		mode: directLake

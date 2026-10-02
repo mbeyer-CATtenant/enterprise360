@@ -21,7 +21,7 @@ table Inventory
 		lineageTag: b17c08b6-7308-4001-be34-4f83d4dd3a9d
 
 	/// Standard-cost value of inventory on hand.
-	measure 'Inventory Value' = SUMX(Inventory, Inventory[Quantity on Hand Value] * RELATED(Product[Standard Cost]))
+	measure 'Inventory Value' = SUM(Inventory[Inventory Value Source])
 		formatString: $#,##0.00
 		displayFolder: Measures\Value
 		lineageTag: 0a2945a7-432e-40ec-90a7-de95492ca277
@@ -95,6 +95,7 @@ table Inventory
 	column 'Quantity on Hand Value'
 		dataType: int64
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: cf209d42-d857-4b1c-beaa-4014aedde0c1
 		summarizeBy: none
 		sourceColumn: quantity_on_hand
@@ -103,6 +104,7 @@ table Inventory
 	column 'Allocated Quantity Value'
 		dataType: int64
 		isHidden
+		isAvailableInMdx: false
 		lineageTag: 3458d403-2bc7-4793-b840-d3b81020ff16
 		summarizeBy: none
 		sourceColumn: quantity_allocated
@@ -129,6 +131,33 @@ table Inventory
 		lineageTag: b1471b33-b4c4-42d0-bea0-e9dd49853c59
 		summarizeBy: none
 		sourceColumn: stockout_flag
+
+	/// Integer date key for the inventory snapshot relationship.
+	column 'Snapshot Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 62d53483-3a3c-4baa-80f7-87e2a59e3d6b
+		summarizeBy: none
+		sourceColumn: snapshot_date_key
+
+	/// Standard cost captured at the inventory snapshot grain.
+	column 'Snapshot Standard Cost'
+		dataType: decimal
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: a0ef2732-9356-49af-bbdd-31d607df1325
+		summarizeBy: none
+		sourceColumn: standard_cost
+
+	/// Materialized inventory value at the snapshot grain.
+	column 'Inventory Value Source'
+		dataType: decimal
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 0e82fdfd-bd94-4d5e-8d4f-36562392519f
+		summarizeBy: none
+		sourceColumn: inventory_value
 
 	partition Inventory = entity
 		mode: directLake

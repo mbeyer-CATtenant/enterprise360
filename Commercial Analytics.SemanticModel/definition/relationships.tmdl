@@ -6,15 +6,53 @@ relationship 'Orders to Sales Channel'
 	fromColumn: Orders.'Sales Channel Key'
 	toColumn: 'Sales Channel'.'Sales Channel Key'
 
-relationship 'Orders to Date'
-	fromColumn: Orders.'Order Date'
-	toColumn: Date.Date
-
-relationship 'Sales to Orders'
-	fromColumn: Sales.'Sales Order Key'
-	toColumn: Orders.'Sales Order Key'
-
 relationship 'Sales to Product'
 	fromColumn: Sales.'Product Key'
 	toColumn: Product.'Product Key'
+
+relationship 'Orders to Date'
+	fromColumn: Orders.'Order Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Orders Requested Date to Date'
+	isActive: false
+	fromColumn: Orders.'Requested Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Sales to Customer'
+	fromColumn: Sales.'Customer Key'
+	toColumn: Customer.'Customer Key'
+
+relationship 'Sales to Sales Channel'
+	fromColumn: Sales.'Sales Channel Key'
+	toColumn: 'Sales Channel'.'Sales Channel Key'
+
+relationship 'Sales Order Date to Date'
+	fromColumn: Sales.'Order Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Sales Requested Date to Date'
+	isActive: false
+	fromColumn: Sales.'Requested Date Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Customer Created On to Date'
+	isActive: false
+	fromColumn: Customer.'Created On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Customer Modified On to Date'
+	isActive: false
+	fromColumn: Customer.'Modified On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Product Created On to Date'
+	isActive: false
+	fromColumn: Product.'Created On Key'
+	toColumn: Date.'Date Key'
+
+relationship 'Product Modified On to Date'
+	isActive: false
+	fromColumn: Product.'Modified On Key'
+	toColumn: Date.'Date Key'
 

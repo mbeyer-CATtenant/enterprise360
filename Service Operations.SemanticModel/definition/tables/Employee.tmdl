@@ -3,10 +3,40 @@ table Employee
 	lineageTag: 234afdc0-3ab6-4247-abe3-b57b55f76fbc
 
 	/// Number of employees currently marked active.
-	measure '# Active Employees' = CALCULATE(COUNTROWS(Employee), KEEPFILTERS(Employee[Status] = "Active"))
+	measure '# Active Employees' = CALCULATE(COUNTROWS(Employee), KEEPFILTERS(Employee[Employee Status] = "Active"))
 		formatString: #,##0
 		displayFolder: Measures\Counts
 		lineageTag: 621f9b00-2945-4a8d-9005-2b37aebd20fd
+
+	/// Number of employees by their hire date.
+	measure '# Employees Hired' =
+			CALCULATE(
+			    COUNTROWS(Employee),
+			    USERELATIONSHIP(Employee[Hire Date Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: ed03888d-69b1-497b-9536-710163400eff
+
+	/// Number of employee records by their creation date.
+	measure '# Employees Created' =
+			CALCULATE(
+			    COUNTROWS(Employee),
+			    USERELATIONSHIP(Employee[Created On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: ec3bfe8b-5210-4660-902c-d6dcf273f433
+
+	/// Number of employee records by their most recent modification date.
+	measure '# Employees Modified' =
+			CALCULATE(
+			    COUNTROWS(Employee),
+			    USERELATIONSHIP(Employee[Modified On Key], 'Date'[Date Key])
+			)
+		formatString: #,##0
+		displayFolder: Measures\Date Roles
+		lineageTag: 84ad8668-6b1d-42fb-a9df-fbacc7b80dab
 
 	/// Integer relationship key optimized for Direct Lake joins.
 	column 'Employee Key'
@@ -20,10 +50,11 @@ table Employee
 	/// Stable employee identifier used to connect technician records.
 	column 'Employee ID'
 		dataType: string
-		isHidden
 		lineageTag: dd49b91b-19e4-4162-b084-a774bc9e2f16
 		summarizeBy: none
 		sourceColumn: employee_id
+
+		changedProperty = IsHidden
 
 	/// Employee display name.
 	column 'Employee Name'
@@ -73,11 +104,54 @@ table Employee
 		sourceColumn: hire_date
 
 	/// Current employment status.
-	column Status
+	column 'Employee Status'
 		dataType: string
 		lineageTag: 070b1f9e-a6f3-4b8f-8068-49c8757b5278
 		summarizeBy: none
 		sourceColumn: status
+
+	/// Integer date key for employee hire-date analysis.
+	column 'Hire Date Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 24e78c2d-c2bb-4084-8ee5-481223fe4c26
+		summarizeBy: none
+		sourceColumn: hire_date_key
+
+	/// Date on which the employee record was created.
+	column 'Created On'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: a31895bc-474f-431b-b738-551a802c9810
+		summarizeBy: none
+		sourceColumn: created_on
+
+	/// Integer date key for employee creation-date analysis.
+	column 'Created On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 7811eba0-7d5d-427c-b70c-d14a9a20515a
+		summarizeBy: none
+		sourceColumn: created_on_key
+
+	/// Date on which the employee record was last modified.
+	column 'Modified On'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: b8e92e49-31b6-4492-bf50-9434b91e1105
+		summarizeBy: none
+		sourceColumn: modified_on
+
+	/// Integer date key for employee modification-date analysis.
+	column 'Modified On Key'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 31bf09a4-99a7-4446-88ac-a580debe3cd2
+		summarizeBy: none
+		sourceColumn: modified_on_key
 
 	partition Employee = entity
 		mode: directLake
