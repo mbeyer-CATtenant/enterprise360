@@ -37,7 +37,7 @@
 import sempy.fabric as fabric
 
 dataset = "Commercial Analytics" # Enter the name or ID of the semantic model
-workspace = "Enterprise 360 [dev]" # Enter the workspace name or ID in which the semantic model exists
+workspace = "branch_bpa_updates" # Enter the workspace name or ID in which the semantic model exists
 
 # METADATA ********************
 

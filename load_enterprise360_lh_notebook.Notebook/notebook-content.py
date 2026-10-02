@@ -38,8 +38,8 @@
 # Fabric pipeline parameters. Mark this cell as the parameter cell after import.
 SCALE = "small"  # small, medium, or large
 SEED = 20261001
-START_DATE = "2024-01-01"
-END_DATE = "2026-09-30"
+START_DATE = "2015-01-01"
+END_DATE = "2029-12-31"
 WRITE_MODE = "overwrite"
 OPTIMIZE_GOLD = False
 
@@ -175,7 +175,7 @@ print(
 
 # MARKDOWN ********************
 
-# ## 2. Deterministic generation helpers
+# ## 2a. Deterministic generation helpers
 
 
 # CELL ********************
@@ -287,6 +287,11 @@ def generated_date(id_column: str, salt: int = 0):
     )
 
 
+def to_date_key(col_name: str):
+    """Convert a date column to an integer yyyyMMdd key for joins to dim_date."""
+    return F.date_format(F.col(col_name), "yyyyMMdd").cast("int")
+
+
 def add_lineage(df: DataFrame, source_system: str) -> DataFrame:
     return (
         df.withColumn("ingestion_timestamp", F.lit(LOAD_TS).cast("timestamp"))
@@ -346,12 +351,14 @@ def require_no_orphans(
 
 # MARKDOWN ********************
 
-# ## 3. Enterprise dimensions
-
+# ## 2b. Populate date dimension
+# 
+# Use this section when you need to extend or fix the date dimension without regenerating the rest of the synthetic data. It rewrites only the `bronze.date_raw`, `silver.date`, and `gold.dim_date` tables using the current `START_DATE` and `END_DATE`.
 
 # CELL ********************
 
-date_dim = (
+# 1. Build in-memory date_dim using the current START_DATE and END_DATE
+new_date_dim = (
     spark.sql(
         f"""
         SELECT explode(
@@ -366,8 +373,48 @@ date_dim = (
     .withColumn("month_name", F.date_format("full_date", "MMMM"))
     .withColumn("week_of_year", F.weekofyear("full_date"))
     .withColumn("day_of_week", F.date_format("full_date", "EEEE"))
+    # Use Spark's dayofweek() (1=Sunday..7=Saturday) and remap so Monday=1..Sunday=7
+    .withColumn(
+        "day_of_week_sort",
+        (F.pmod(F.dayofweek("full_date") + F.lit(5), F.lit(7)) + F.lit(1)).cast("int"),
+    )
     .withColumn("is_weekend", F.dayofweek("full_date").isin(1, 7))
 )
+
+# 2. Overwrite bronze.date_raw with lineage columns
+write_delta(
+    add_lineage(new_date_dim, "SYNTHETIC_DATE"),
+    "bronze.date_raw",
+)
+
+# 3. Conform and validate silver.date
+silver_date = (
+    spark.table("bronze.date_raw")
+    .where(F.col("date_key").isNotNull())
+    .dropDuplicates(["date_key"])
+)
+write_delta(silver_date, "silver.date")
+require_unique("silver.date", ["date_key"])
+
+# 4. Publish gold.dim_date and validate
+write_delta(spark.table("silver.date"), "gold.dim_date")
+require_unique("gold.dim_date", ["date_key"])
+
+print("Refreshed bronze.date_raw, silver.date, and gold.dim_date.")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# MARKDOWN ********************
+
+# ## 3. Enterprise dimensions
+
+
+# CELL ********************
 
 facility_seed = spark.range(N["facilities"]).withColumn("n", F.col("id") + 1)
 facility = (
@@ -543,11 +590,15 @@ asset = (
     .withColumn("facility_id", synthetic_id("FAC", F.col("facility_key"), 4))
     .withColumn("asset_type", pick(["EquipmentAsset", "VehicleAsset"], hash_bucket("id", 73, 5).cast("int") % 2))
     .withColumn("install_date", F.date_add(F.lit("2017-01-01").cast("date"), hash_bucket("id", 74, 3468)))
+    .withColumn("install_date_key", to_date_key("install_date"))
     .withColumn("warranty_expiry", F.add_months("install_date", 36))
+    .withColumn("warranty_expiry_key", to_date_key("warranty_expiry"))
     .withColumn("criticality", pick(["Low", "Medium", "High", "Critical"], hash_bucket("id", 75, 10).cast("int") % 4))
     .withColumn("status", F.when(hash_bucket("id", 76, 25) == 0, "Out of Service").otherwise("Active"))
     .withColumn("created_on", F.col("install_date"))
+    .withColumn("created_on_key", to_date_key("created_on"))
     .withColumn("modified_on", F.lit(END_DATE).cast("date"))
+    .withColumn("modified_on_key", to_date_key("modified_on"))
     .drop("id", "n")
 )
 
@@ -560,7 +611,9 @@ order_base = (
     .withColumn("sales_channel_key", (hash_bucket("id", 81, 4) + 1).cast("long"))
     .withColumn("sales_channel_id", synthetic_id("CH", F.col("sales_channel_key"), 2))
     .withColumn("order_date", generated_date("id", 82))
+    .withColumn("order_date_key", to_date_key("order_date"))
     .withColumn("requested_date", F.date_add("order_date", hash_bucket("id", 83, 25) + 3))
+    .withColumn("requested_date_key", to_date_key("requested_date"))
     .withColumn("currency_code", F.lit("USD"))
     .withColumn(
         "order_status",
@@ -577,7 +630,9 @@ order_base = (
         "sales_channel_key",
         "sales_channel_id",
         "order_date",
+        "order_date_key",
         "requested_date",
+        "requested_date_key",
         "currency_code",
         "order_status",
     )
@@ -601,7 +656,8 @@ order_line = (
     .withColumn("unit_price", F.col("list_price"))
     .withColumn(
         "line_revenue",
-        (F.col("quantity") * F.col("unit_price") * (F.lit(1) - F.col("discount_percent"))).cast("decimal(18,2)"),
+        (F.col("quantity") * F.col("unit_price") * (F.lit(1) - F.col("discount_percent")).cast("decimal(5,4)"))
+        .cast("decimal(18,2)"),
     )
     .withColumn("line_cost", (F.col("quantity") * F.col("standard_cost")).cast("decimal(18,2)"))
     .select(
@@ -669,8 +725,11 @@ purchase_order_line = (
     .withColumn("facility_key", (hash_bucket("id", 112, N["facilities"]) + 1).cast("long"))
     .withColumn("facility_id", synthetic_id("FAC", F.col("facility_key"), 4))
     .withColumn("order_date", generated_date("id", 113))
+    .withColumn("order_date_key", to_date_key("order_date"))
     .withColumn("expected_date", F.date_add("order_date", hash_bucket("id", 114, 45) + 5))
+    .withColumn("expected_date_key", to_date_key("expected_date"))
     .withColumn("received_date", F.date_add("expected_date", hash_bucket("id", 115, 18) - 5))
+    .withColumn("received_date_key", to_date_key("received_date"))
     .withColumn("ordered_quantity", (hash_bucket("id", 116, 200) + 20).cast("int"))
     .withColumn("received_quantity", F.greatest(F.lit(0), F.col("ordered_quantity") - hash_bucket("id", 117, 25)).cast("int"))
     .join(F.broadcast(product.select("product_id", "standard_cost")), "product_id", "inner")
@@ -693,8 +752,11 @@ shipment = (
     .withColumn("facility_id", synthetic_id("FAC", F.col("facility_key"), 4))
     .withColumn("carrier_name", pick(CARRIERS, hash_bucket("id", 122, len(CARRIERS))))
     .withColumn("ship_date", generated_date("id", 123))
+    .withColumn("ship_date_key", to_date_key("ship_date"))
     .withColumn("promised_delivery_date", F.date_add("ship_date", hash_bucket("id", 124, 10) + 2))
+    .withColumn("promised_delivery_date_key", to_date_key("promised_delivery_date"))
     .withColumn("actual_delivery_date", F.date_add("promised_delivery_date", hash_bucket("id", 125, 9) - 3))
+    .withColumn("actual_delivery_date_key", to_date_key("actual_delivery_date"))
     .withColumn("freight_cost", (F.lit(75.0) + hash_bucket("id", 126, 25000) / F.lit(10.0)).cast("decimal(18,2)"))
     .withColumn("quality_hold", hash_bucket("id", 127, 100) < 2)
     .withColumn(
@@ -710,6 +772,7 @@ inventory_seed = spark.range(N["inventory_snapshots"]).withColumn("n", F.col("id
 inventory_snapshot = (
     inventory_seed.withColumn("inventory_snapshot_id", synthetic_id("INV", F.col("n"), 12))
     .withColumn("snapshot_date", generated_date("id", 130))
+    .withColumn("snapshot_date_key", to_date_key("snapshot_date"))
     .withColumn("facility_key", (hash_bucket("id", 131, N["facilities"]) + 1).cast("long"))
     .withColumn("facility_id", synthetic_id("FAC", F.col("facility_key"), 4))
     .withColumn("product_key", (hash_bucket("id", 132, N["products"]) + 1).cast("long"))
@@ -746,6 +809,7 @@ work_order = (
     .withColumn("technician_key", (hash_bucket("id", 141, N["technicians"]) + 1).cast("long"))
     .withColumn("technician_id", synthetic_id("TEC", F.col("technician_key"), 6))
     .withColumn("opened_date", generated_date("id", 142))
+    .withColumn("opened_date_key", to_date_key("opened_date"))
     .withColumn("priority", pick(["Low", "Medium", "High", "Critical"], hash_bucket("id", 143, 10).cast("int") % 4))
     .withColumn("work_order_type", pick(["Preventive", "Corrective", "Inspection", "Installation"], hash_bucket("id", 144, 4)))
     .withColumn(
@@ -757,6 +821,7 @@ work_order = (
         ).cast("decimal(10,2)"),
     )
     .withColumn("resolved_date", F.date_add("opened_date", F.ceil(F.col("duration_hours") / 24).cast("int")))
+    .withColumn("resolved_date_key", to_date_key("resolved_date"))
     .withColumn(
         "work_order_status",
         F.when(F.col("resolved_date") > F.lit(END_DATE).cast("date"), "Open")
@@ -786,6 +851,7 @@ asset_daily_status = (
     .withColumn("asset_key", (hash_bucket("id", 160, N["assets"]) + 1).cast("long"))
     .withColumn("asset_id", synthetic_id("AST", F.col("asset_key"), 9))
     .withColumn("status_date", generated_date("id", 161))
+    .withColumn("status_date_key", to_date_key("status_date"))
     .withColumn("operating_hours", (hash_bucket("id", 162, 240) / F.lit(10.0)).cast("decimal(5,1)"))
     .withColumn("downtime_hours", (F.lit(24.0) - F.col("operating_hours")).cast("decimal(5,1)"))
     .withColumn("health_score", (F.lit(45.0) + hash_bucket("id", 163, 551) / F.lit(10.0)).cast("decimal(5,1)"))
@@ -810,7 +876,7 @@ asset_daily_status = (
 # CELL ********************
 
 bronze_frames = {
-    "date": date_dim,
+    # "date": date_dim,  # date handled separately in section 2a
     "facility": facility,
     "customer": customer,
     "product": product,
@@ -850,7 +916,7 @@ for table, frame in bronze_frames.items():
 # CELL ********************
 
 table_keys = {
-    "date": ["date_key"],
+    # "date": ["date_key"],  # date handled separately in section 2a
     "facility": ["facility_id"],
     "customer": ["customer_id"],
     "product": ["product_id"],
@@ -896,7 +962,7 @@ for table, keys in table_keys.items():
 # CELL ********************
 
 gold_map = {
-    "dim_date": "date",
+    # "dim_date": "date",  # date handled separately in section 2a
     "dim_facility": "facility",
     "dim_customer": "customer",
     "dim_product": "product",
